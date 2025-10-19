@@ -305,7 +305,7 @@ if not DEBUG:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'tu-voz-en-ruta.onrender.com']
+ALLOWED_HOSTS = ['*']
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
