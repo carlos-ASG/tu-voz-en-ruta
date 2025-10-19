@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: buzon_db
+      POSTGRES_USER: buzon_user
+      POSTGRES_PASSWORD: buzon_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data_buzon:/var/lib/postgresql/data
+
+volumes:
+  postgres_data_buzon:
+
+## docker compose up -d

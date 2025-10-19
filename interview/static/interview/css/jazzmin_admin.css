@@ -1,0 +1,20 @@
+/* Jazzmin admin custom overrides */
+
+/* Increase site/login logo size in Jazzmin (multiple selectors to cover variations) */
+.navbar-brand img,
+.login-logo img,
+.jazzmin-login-logo img,
+.jazzmin-site-logo img,
+.brand img {
+    /* Larger header/site logo */
+    max-height: 160px !important;
+    max-width: 640px !important;
+    height: auto !important;
+}
+
+/* Larger logo on the login page specifically */
+.login-page .navbar-brand img,
+.login-page .login-logo img {
+    max-height: 140px !important;
+    max-width: 560px !important;
+}
