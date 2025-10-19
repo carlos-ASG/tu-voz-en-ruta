@@ -1,0 +1,68 @@
+# .gitignore para proyecto Django
+# Basado en buenas prácticas: ignorar entornos, archivos temporales, IDEs y datos sensibles
+
+# Entornos virtuales
+venv/
+ENV/
+env/
+.pyenv/
+.local/
+
+# Archivos de entorno (no guardar secretos)
+.env
+.env.* 
+
+# Bases de datos locales
+db.sqlite3
+*.sqlite3
+
+# Archivos de migraciones compiladas / caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de logs y reportes
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+htmlcov/
+.coverage
+
+# Archivos estáticos y media generados
+staticfiles/
+media/
+public/
+build/
+
+# Archivos de sistema / OS
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Dependencias / empaquetado
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
+
+# Pytest / testing
+.pytest_cache/
+nosetests.xml
+
+# C-extension build artefacts
+*.so
+
+# Docker
+docker-compose.override.yml
+
+# Misc
+*.swp
+*~
+.cache/

@@ -1,0 +1,1 @@
+web: python manage.py collectstatic && gunicorn buzon_quejas.wsgi
