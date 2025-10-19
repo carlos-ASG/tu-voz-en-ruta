@@ -22,7 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-99)27wa3uc3o571$ibu^e!6#t!!xuhjry=h$3jpo6j#_a9i(^('
+os.environ.setdefault("SECRET_KEY", "django-insecure-99)27wa3uc3o571$ibu^e!6#t!!xuhjry=h$3jpo6j#_a9i(^(")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -80,13 +81,13 @@ WSGI_APPLICATION = 'buzon_quejas.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Set default values for the environment variables if they’re not already set
-os.environ.setdefault("DB_URL", "postgresql://buzon_user:buzon_password@localhost:5432/buzon_db")
+os.environ.setdefault("DATABASE_URL", "postgresql://buzon_user:buzon_password@localhost:5432/buzon_db")
 
 
 DATABASES = {
     'default': dj_database_url.config(
         # Replace this value with your local database's connection string.
-        default=os.environ.get("DB_URL"),
+        default=os.environ.get("DATABASE_URL"),
         conn_max_age=600
     )
 }
