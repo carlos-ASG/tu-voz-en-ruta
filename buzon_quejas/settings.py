@@ -14,8 +14,12 @@ from pathlib import Path
 import os
 import dj_database_url 
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -28,8 +32,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'tu-voz-en-ruta.onrender.com']
 
 # Application definition
 
@@ -305,7 +308,6 @@ if not DEBUG:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-ALLOWED_HOSTS = ['*']
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -314,11 +316,3 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-
-# Cargar variables de entorno desde .env en desarrollo
-try:
-    from dotenv import load_dotenv
-    load_dotenv(BASE_DIR / '.env')
-except Exception:
-    # Si no está instalado, continuar; se puede instalar con `pip install python-dotenv`
-    pass
