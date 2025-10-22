@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'transport.apps.TransportConfig',
     'interview.apps.InterviewConfig',
+    'organization.apps.OrganizationConfig',
 ]
 
 MIDDLEWARE = [
@@ -95,7 +95,6 @@ DATABASES = {
     )
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -113,6 +112,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = 'organization.User'
 
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
@@ -216,21 +217,23 @@ JAZZMIN_SETTINGS = {
     # for the full list of 5.13.0 free icon classes
     "icons": {
         "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
-        # Icons for transport app
-        "transport": "fas fa-bus-alt",
-        "transport.unit": "fas fa-bus",
-        "transport.route": "fas fa-route",
         # Icons for the interview app and its models
         "interview": "fas fa-poll",
         "interview.question": "fas fa-question",
         "interview.questionoption": "fas fa-list",
-        "interview.suverysubmission": "fas fa-file-alt",
+        # Corrected key for SurveySubmission model (was misspelled)
+        "interview.surveysubmission": "fas fa-file-alt",
         "interview.answer": "fas fa-reply",
         # icons added for newly created models
         "interview.complaintreason": "fas fa-flag",
         "interview.complaint": "fas fa-exclamation-circle",
+        # Organization app icons (added)
+        "organization": "fas fa-building",
+        "organization.organization": "fas fa-building",
+        "organization.route": "fas fa-road",
+        "organization.unit": "fas fa-bus",
+        "organization.user": "fas fa-user",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",

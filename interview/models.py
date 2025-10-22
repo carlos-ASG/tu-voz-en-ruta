@@ -2,6 +2,9 @@ from django.db import models
 import uuid
 from django.utils import timezone
 
+import organization
+from organization.models import Organization
+
 class Question(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     text = models.TextField(verbose_name='Texto de la pregunta')
@@ -23,6 +26,15 @@ class Question(models.Model):
     created_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de creación')
     updated_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de actualización')
     
+    Organization = models.ForeignKey(
+        Organization,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='questions',
+        verbose_name='Organización'
+    )
+    
     def __str__(self):
         return str(self.text[:50])
     
@@ -34,10 +46,18 @@ class Question(models.Model):
 
 class ComplaintReason(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    code = models.CharField(max_length=64, unique=True, verbose_name='Código')
     label = models.CharField(max_length=255, verbose_name='Etiqueta')
     created_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de creación')
     updated_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de actualización')
+
+    organization = models.ForeignKey(
+        Organization,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='complaint_reasons',
+        verbose_name='Organización'
+    )
 
     def __str__(self):
         return self.label
@@ -50,13 +70,22 @@ class ComplaintReason(models.Model):
 
 class Complaint(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    unit = models.ForeignKey('transport.Unit', null=True, blank=True, on_delete=models.SET_NULL, related_name='complaints', verbose_name='Unidad')
+    unit = models.ForeignKey('organization.Unit', null=True, blank=True, on_delete=models.SET_NULL, related_name='complaints', verbose_name='Unidad')
     reason = models.ForeignKey(ComplaintReason, null=True, blank=True, on_delete=models.SET_NULL, related_name='complaints', verbose_name='Motivo')
     text = models.TextField(verbose_name='Texto de la queja')
     submitted_at = models.DateTimeField(default=timezone.now)
     # additional fields present in the DB schema
     metadata = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de creación')
+
+    organization = models.ForeignKey(
+        Organization,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='complaints',
+        verbose_name='Organización'
+    )
 
     def __str__(self):
         return f'Queja {self.id} - {self.unit.unit_number if self.unit else "-"}'
@@ -73,6 +102,14 @@ class QuestionOption(models.Model):
     position = models.IntegerField(verbose_name='Posición de la opción')
     created_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de creación')
     updated_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de actualización')
+    organization = models.ForeignKey(
+        Organization,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='question_options',
+        verbose_name='Organización'
+    )
 
     def __str__(self):
         return self.text
@@ -82,10 +119,18 @@ class QuestionOption(models.Model):
         verbose_name = 'Opción de pregunta'
         verbose_name_plural = 'Opciones de preguntas'
 
-class SuverySubmission(models.Model):
+class SurveySubmission(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    unit = models.ForeignKey('transport.Unit', on_delete=models.CASCADE, related_name='submissions', verbose_name='Unidad')
+    unit = models.ForeignKey('organization.Unit', on_delete=models.CASCADE, related_name='submissions', verbose_name='Unidad')
     submitted_at = models.DateTimeField(default=timezone.now)
+    organization = models.ForeignKey(
+        Organization,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='survey_submissions',
+        verbose_name='Organización'
+    )
 
     def __str__(self):
         return f'Submission {self.id} for Unit {self.unit.unit_number}'
@@ -97,12 +142,21 @@ class SuverySubmission(models.Model):
 
 class Answer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    submission = models.ForeignKey(SuverySubmission, on_delete=models.CASCADE, related_name='answers', verbose_name='Envío de encuesta')
+    submission = models.ForeignKey(SurveySubmission, on_delete=models.CASCADE, related_name='answers', verbose_name='Envío de encuesta')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers', verbose_name='Pregunta')
     text_answer = models.TextField(null=True, blank=True, verbose_name='Respuesta de texto')
     rating_answer = models.IntegerField(null=True, blank=True, verbose_name='Respuesta de calificación')
     selected_options = models.ManyToManyField(QuestionOption, blank=True, related_name='answers', verbose_name='Opciones seleccionadas')
     created_at = models.DateTimeField(default=timezone.now, verbose_name='Fecha de creación')
+    
+    organization = models.ForeignKey(
+        Organization,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='answers',
+        verbose_name='Organización'
+    )
 
     def __str__(self):
         return f'Answer {self.id} for Question {self.question.id}'

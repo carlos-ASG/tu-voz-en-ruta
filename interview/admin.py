@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuestionOption, SuverySubmission, Answer, Question, ComplaintReason, Complaint
+from .models import QuestionOption, SurveySubmission, Answer, Question, ComplaintReason, Complaint
 
 
 @admin.register(Question)
@@ -13,6 +13,34 @@ class QuestionAdmin(admin.ModelAdmin):
 	def text_short(self, obj):
 		return (obj.text[:50] + '...') if len(obj.text) > 50 else obj.text
 	text_short.short_description = 'Texto (resumen)'
+	
+	def get_queryset(self, request):
+		qs = super().get_queryset(request)
+		
+		if request.user.is_superuser:
+			return qs
+		
+		if hasattr(request.user, 'organization') and request.user.organization:
+			return qs.filter(Organization=request.user.organization)
+			
+		return qs.none()
+	
+	def save_model(self, request, obj, form, change):
+		if not request.user.is_superuser:
+			obj.Organization = request.user.organization
+		
+		super().save_model(request, obj, form, change)
+	
+	def has_module_permission(self, request):
+		return request.user.is_superuser or request.user.is_staff
+
+	def get_fields(self, request, obj=None):
+		fields = super().get_fields(request, obj)
+		fields = list(fields)
+		# field is named 'Organization' in the model (note the capital O)
+		if not request.user.is_superuser and 'Organization' in fields:
+			fields.remove('Organization')
+		return tuple(fields)
 
 
 @admin.register(QuestionOption)
@@ -21,6 +49,33 @@ class QuestionOptionAdmin(admin.ModelAdmin):
 	search_fields = ('text', 'question__text')
 	ordering = ('question', 'position')
 	readonly_fields = ('created_at', 'updated_at')
+	
+	def get_queryset(self, request):
+		qs = super().get_queryset(request)
+		
+		if request.user.is_superuser:
+			return qs
+		
+		if hasattr(request.user, 'organization') and request.user.organization:
+			return qs.filter(organization=request.user.organization)
+			
+		return qs.none()
+	
+	def save_model(self, request, obj, form, change):
+		if not request.user.is_superuser:
+			obj.organization = request.user.organization
+		
+		super().save_model(request, obj, form, change)
+	
+	def has_module_permission(self, request):
+		return request.user.is_superuser or request.user.is_staff
+
+	def get_fields(self, request, obj=None):
+		fields = super().get_fields(request, obj)
+		fields = list(fields)
+		if not request.user.is_superuser and 'organization' in fields:
+			fields.remove('organization')
+		return tuple(fields)
 
 
 class ReadOnlyAdminMixin:
@@ -58,13 +113,34 @@ class ReadOnlyAdminMixin:
 		return super().change_view(request, object_id, form_url, extra_context=extra)
 
 
-@admin.register(SuverySubmission)
-class SuverySubmissionAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+@admin.register(SurveySubmission)
+class SurveySubmissionAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 	list_display = ('unit', 'submitted_at')
 	search_fields = ('unit__unit_number',)
-	# SuverySubmission model tiene solo: id, unit, submitted_at
+	# SurveySubmission model tiene solo: id, unit, submitted_at
 	readonly_fields = ('id', 'unit', 'submitted_at')
 	ordering = ('-submitted_at',)
+	
+	def get_queryset(self, request):
+		qs = super().get_queryset(request)
+		
+		if request.user.is_superuser:
+			return qs
+		
+		if hasattr(request.user, 'organization') and request.user.organization:
+			return qs.filter(organization=request.user.organization)
+			
+		return qs.none()
+	
+	def has_module_permission(self, request):
+		return request.user.is_superuser or request.user.is_staff
+
+	def get_fields(self, request, obj=None):
+		fields = super().get_fields(request, obj)
+		fields = list(fields)
+		if not request.user.is_superuser and 'organization' in fields:
+			fields.remove('organization')
+		return tuple(fields)
 
 
 @admin.register(Answer)
@@ -85,13 +161,61 @@ class AnswerAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 		m2m_fields = [f.name for f in self.model._meta.many_to_many]
 		# asegurar que no haya duplicados
 		return tuple(dict.fromkeys(list(base) + m2m_fields))
+	
+	def get_queryset(self, request):
+		qs = super().get_queryset(request)
+		
+		if request.user.is_superuser:
+			return qs
+		
+		if hasattr(request.user, 'organization') and request.user.organization:
+			return qs.filter(organization=request.user.organization)
+			
+		return qs.none()
+	
+	def has_module_permission(self, request):
+		return request.user.is_superuser or request.user.is_staff
+
+	def get_fields(self, request, obj=None):
+		fields = super().get_fields(request, obj)
+		fields = list(fields)
+		if not request.user.is_superuser and 'organization' in fields:
+			fields.remove('organization')
+		return tuple(fields)
 
 
 @admin.register(ComplaintReason)
 class ComplaintReasonAdmin(admin.ModelAdmin):
-	list_display = ('code', 'label', 'created_at')
-	search_fields = ('code', 'label')
+	list_display = ('label', 'created_at')
+	search_fields = ('label',)
 	readonly_fields = ('created_at',)
+	
+	def get_queryset(self, request):
+		qs = super().get_queryset(request)
+		
+		if request.user.is_superuser:
+			return qs
+		
+		if hasattr(request.user, 'organization') and request.user.organization:
+			return qs.filter(organization=request.user.organization)
+			
+		return qs.none()
+	
+	def save_model(self, request, obj, form, change):
+		if not request.user.is_superuser:
+			obj.organization = request.user.organization
+		
+		super().save_model(request, obj, form, change)
+	
+	def has_module_permission(self, request):
+		return request.user.is_superuser or request.user.is_staff
+
+	def get_fields(self, request, obj=None):
+		fields = super().get_fields(request, obj)
+		fields = list(fields)
+		if not request.user.is_superuser and 'organization' in fields:
+			fields.remove('organization')
+		return tuple(fields)
 
 
 @admin.register(Complaint)
@@ -100,3 +224,24 @@ class ComplaintAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 	search_fields = ('unit__unit_number', 'reason__label')
 	readonly_fields = ('created_at',)
 	exclude = ('metadata',)
+	
+	def get_queryset(self, request):
+		qs = super().get_queryset(request)
+		
+		if request.user.is_superuser:
+			return qs
+		
+		if hasattr(request.user, 'organization') and request.user.organization:
+			return qs.filter(organization=request.user.organization)
+			
+		return qs.none()
+	
+	def has_module_permission(self, request):
+		return request.user.is_superuser or request.user.is_staff
+
+	def get_fields(self, request, obj=None):
+		fields = super().get_fields(request, obj)
+		fields = list(fields)
+		if not request.user.is_superuser and 'organization' in fields:
+			fields.remove('organization')
+		return tuple(fields)

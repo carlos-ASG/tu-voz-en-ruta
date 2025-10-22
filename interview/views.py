@@ -1,17 +1,18 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from transport.models import Unit
-from .models import Question, ComplaintReason, SuverySubmission, Answer, Complaint
+
+from organization.models import Unit
+from .models import Question, ComplaintReason, SurveySubmission, Answer, Complaint
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
-def survey_form(request):
+def survey_form(request, organization_id):
     context = {
-        'units': Unit.objects.select_related('route').all(),
-        'questions': Question.objects.filter(active=True).prefetch_related('options').order_by('position'),
-        'complaint_reasons': ComplaintReason.objects.all().order_by('label'),
+        'units': Unit.objects.select_related('route').filter(organization_id=organization_id),
+        'questions': Question.objects.filter(active=True, organization_id=organization_id).prefetch_related('options').order_by('position'),
+        'complaint_reasons': ComplaintReason.objects.filter(organization_id=organization_id).order_by('label'),
     }
     return render(request, 'interview/form_section.html', context)
 
@@ -27,7 +28,7 @@ def submit_survey(request):
             unit = Unit.objects.get(id=unit_id)
             
             # 2. Crear el registro de envío de encuesta
-            submission = SuverySubmission.objects.create(unit=unit)
+            submission = SurveySubmission.objects.create(unit=unit)
             
             # 3. Procesar las respuestas a las preguntas
             questions = Question.objects.filter(active=True)
