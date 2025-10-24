@@ -1,104 +1,216 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from organization.models import Unit
+from organization.models import Unit, Organization
 from .models import Question, ComplaintReason, SurveySubmission, Answer, Complaint
+from .forms.survery_form import SurveyForm
+from .forms.select_unit_form import SelectUnitForm
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
+def select_unit(request):
+    """
+    Vista para seleccionar la unidad antes de mostrar el formulario de encuesta.
+    Muestra todas las unidades de todas las organizaciones.
+    Al enviar, redirige automáticamente al formulario de la organización y unidad seleccionada.
+    """
+    if request.method == 'POST':
+        form = SelectUnitForm(request.POST)
+        if form.is_valid():
+            unit = form.get_selected_unit()
+            # Redirigir al formulario de encuesta con la organización y unidad seleccionadas
+            return redirect('interview:survey_form', 
+                          organization_id=unit.organization.id, 
+                          unit_id=unit.id)
+        else:
+            # Si el formulario no es válido, volver a mostrar con errores
+            context = {'form': form}
+            return render(request, 'interview/select_unit.html', context)
+    else:
+        # GET: mostrar formulario vacío
+        form = SelectUnitForm()
+        context = {'form': form}
+        return render(request, 'interview/select_unit.html', context)
 
-def survey_form(request, organization_id):
+
+def survey_form(request, organization_id, unit_id):
+    """
+    Vista para mostrar el formulario de encuesta con preguntas dinámicas.
+    """
+    organization = get_object_or_404(Organization, id=organization_id)
+    unit = get_object_or_404(Unit, id=unit_id, organization_id=organization_id)
+    
+    # Crear el formulario con las preguntas de la organización
+    form = SurveyForm(organization_id=organization_id)
+    
+    # Obtener preguntas para renderizar (con sus opciones)
+    questions = Question.objects.filter(
+        active=True,
+        Organization_id=organization_id
+    ).prefetch_related('options').order_by('position')
+    
     context = {
-        'units': Unit.objects.select_related('route').filter(organization_id=organization_id),
-        'questions': Question.objects.filter(active=True, organization_id=organization_id).prefetch_related('options').order_by('position'),
-        'complaint_reasons': ComplaintReason.objects.filter(organization_id=organization_id).order_by('label'),
+        'organization': organization,
+        'organization_id': organization_id,
+        'unit': unit,
+        'unit_id': unit_id,
+        'form': form,
+        'questions': questions,
+        'complaint_reasons': ComplaintReason.objects.filter(
+            organization_id=organization_id
+        ).order_by('label'),
     }
     return render(request, 'interview/form_section.html', context)
 
-def submit_survey(request):
-    if request.method == 'POST':
+
+def submit_survey(request, organization_id, unit_id):
+    """
+    Vista para procesar el envío de la encuesta.
+    """
+    if request.method != 'POST':
+        return redirect('interview:survey_form', organization_id=organization_id, unit_id=unit_id)
+    
+    organization = get_object_or_404(Organization, id=organization_id)
+    unit = get_object_or_404(Unit, id=unit_id, organization_id=organization_id)
+    
+    # Crear el formulario con los datos POST
+    form = SurveyForm(organization_id=organization_id, data=request.POST)
+    
+    if form.is_valid():
         try:
-            # 1. Obtener la unidad seleccionada
-            unit_id = request.POST.get('unit_number')
-            if not unit_id:
-                messages.error(request, 'Debe seleccionar una unidad.')
-                return redirect('interview:survey_form')
+            # 1. Crear el registro de envío de encuesta con organización
+            submission = SurveySubmission.objects.create(
+                unit=unit,
+                organization=organization
+            )
             
-            unit = Unit.objects.get(id=unit_id)
+            # 2. Procesar las respuestas a las preguntas
+            questions = Question.objects.filter(
+                active=True,
+                Organization_id=organization_id
+            )
             
-            # 2. Crear el registro de envío de encuesta
-            submission = SurveySubmission.objects.create(unit=unit)
-            
-            # 3. Procesar las respuestas a las preguntas
-            questions = Question.objects.filter(active=True)
             for question in questions:
-                question_id_str = str(question.id)
+                field_name = f'question_{question.id}'
+                
+                if field_name not in form.cleaned_data:
+                    continue
+                
+                field_value = form.cleaned_data[field_name]
                 
                 if question.type == Question.QuestionType.RATING:
-                    # Buscar campo tipo question_<uuid>_rating
-                    rating_key = f'question_{question_id_str}_rating'
-                    rating_value = request.POST.get(rating_key)
-                    if rating_value:
+                    # Rating: valor entero del 1 al 5
+                    if field_value:
                         Answer.objects.create(
                             submission=submission,
                             question=question,
-                            rating_answer=int(rating_value)
+                            rating_answer=field_value,
+                            organization=organization
                         )
                 
                 elif question.type == Question.QuestionType.TEXT:
-                    # Buscar campo tipo question_<uuid>_text
-                    text_key = f'question_{question_id_str}_text'
-                    text_value = request.POST.get(text_key)
-                    if text_value and text_value.strip():
+                    # Texto libre
+                    if field_value and field_value.strip():
                         Answer.objects.create(
                             submission=submission,
                             question=question,
-                            text_answer=text_value.strip()
+                            text_answer=field_value.strip(),
+                            organization=organization
                         )
                 
                 elif question.type == Question.QuestionType.CHOICE:
-                    # Buscar campo tipo question_<uuid>_choice (radio button)
-                    choice_key = f'question_{question_id_str}_choice'
-                    option_id = request.POST.get(choice_key)
-                    if option_id:
+                    # Opción única (ModelChoiceField devuelve un QuestionOption)
+                    if field_value:
                         answer = Answer.objects.create(
                             submission=submission,
-                            question=question
+                            question=question,
+                            organization=organization
                         )
-                        answer.selected_options.add(option_id)
+                        answer.selected_options.add(field_value)
                 
                 elif question.type == Question.QuestionType.MULTI_CHOICE:
-                    # Buscar campos tipo question_<uuid>_multi (checkboxes - puede haber múltiples)
-                    multi_key = f'question_{question_id_str}_multi'
-                    option_ids = request.POST.getlist(multi_key)
-                    if option_ids:
+                    # Múltiples opciones (ModelMultipleChoiceField devuelve QuerySet)
+                    if field_value:
                         answer = Answer.objects.create(
                             submission=submission,
-                            question=question
+                            question=question,
+                            organization=organization
                         )
-                        answer.selected_options.set(option_ids)
+                        answer.selected_options.set(field_value)
             
-            # 4. Procesar la queja (si existe)
-            complaint_reason_id = request.POST.get('complaint_reason')
-            complaint_text = request.POST.get('complaint_text', '').strip()
+            # 3. Procesar la queja (si existe)
+            complaint_reason = form.cleaned_data.get('complaint_reason')
+            complaint_text = form.cleaned_data.get('complaint_text', '').strip()
             
-            if complaint_reason_id and complaint_text:
-                complaint_reason = ComplaintReason.objects.get(id=complaint_reason_id)
+            if complaint_reason and complaint_text:
                 Complaint.objects.create(
                     unit=unit,
                     reason=complaint_reason,
-                    text=complaint_text
+                    text=complaint_text,
+                    organization=organization
                 )
             
             messages.success(request, '¡Gracias! Tu encuesta ha sido enviada correctamente.')
             
-        except Unit.DoesNotExist:
-            messages.error(request, 'La unidad seleccionada no existe.')
-        except ComplaintReason.DoesNotExist:
-            messages.error(request, 'El motivo de queja seleccionado no existe.')
+            # Guardar información en la sesión para la vista de agradecimiento
+            request.session['has_complaint'] = bool(complaint_reason and complaint_text)
+            request.session['submission_success'] = True
+            
+            # Redirigir a la vista de agradecimiento
+            return redirect('interview:thank_you')
+            
         except Exception as e:
             messages.error(request, f'Ocurrió un error al procesar la encuesta: {str(e)}')
             print(f'Error en submit_survey: {e}')
+            return redirect('interview:survey_form', organization_id=organization_id, unit_id=unit_id)
+    else:
+        # Si el formulario no es válido, mostrar errores
+        messages.error(request, 'Por favor corrige los errores en el formulario.')
+        
+        # Renderizar el formulario con errores
+        questions = Question.objects.filter(
+            active=True,
+            Organization_id=organization_id
+        ).prefetch_related('options').order_by('position')
+        
+        context = {
+            'organization': organization,
+            'organization_id': organization_id,
+            'unit': unit,
+            'unit_id': unit_id,
+            'form': form,
+            'questions': questions,
+            'complaint_reasons': ComplaintReason.objects.filter(
+                organization_id=organization_id
+            ).order_by('label'),
+        }
+        return render(request, 'interview/form_section.html', context)
+
+
+def thank_you(request):
+    """
+    Vista de agradecimiento mostrada después de enviar la encuesta.
+    """
+    # Verificar que el usuario acaba de enviar una encuesta
+    submission_success = request.session.get('submission_success', False)
+    has_complaint = request.session.get('has_complaint', False)
     
-    return redirect('interview:survey_form')
+    # Limpiar la sesión para evitar accesos directos repetidos
+    if 'submission_success' in request.session:
+        del request.session['submission_success']
+    if 'has_complaint' in request.session:
+        del request.session['has_complaint']
+    
+    # Opcional: obtener estadísticas del día (si quieres mostrarlas)
+    from django.utils import timezone
+    today = timezone.now().date()
+    total_submissions = SurveySubmission.objects.filter(
+        submitted_at__date=today
+    ).count() if submission_success else 0
+    
+    context = {
+        'has_complaint': has_complaint,
+        'show_stats': submission_success,  # Solo mostrar stats si viene de un envío real
+        'total_submissions': total_submissions,
+    }
+    
+    return render(request, 'interview/thank_view.html', context)

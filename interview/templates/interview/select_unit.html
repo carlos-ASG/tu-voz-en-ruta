@@ -1,0 +1,70 @@
+{% extends 'interview/base.html' %}
+
+{% block title %}Seleccionar Unidad - Encuesta de Satisfacción{% endblock %}
+
+{% block header_title %}Selección de Unidad{% endblock %}
+{% block header_subtitle %}Por favor selecciona la unidad en la que viajaste{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'interview:select_unit' %}" class="survey-form" id="selectUnitForm">
+    {% csrf_token %}
+    
+    <!-- Sección: Selección de unidad -->
+    <section class="form-section unit-section">
+        <h2 class="section-title">
+            <span class="section-number">1</span>
+            Información del Viaje
+        </h2>
+        
+        {% if form.errors %}
+        <div class="form-errors">
+            {{ form.errors }}
+        </div>
+        {% endif %}
+        
+        <div class="form-group">
+            {{ form.unit.label_tag }}
+            {{ form.unit }}
+            {% if form.unit.help_text %}
+            <small class="help-text">{{ form.unit.help_text }}</small>
+            {% else %}
+            <small class="help-text">Selecciona el número de la unidad en la que viajaste</small>
+            {% endif %}
+            {% if form.unit.errors %}
+            <div class="field-errors">
+                {{ form.unit.errors }}
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Botón de continuar -->
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            Continuar a la encuesta
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('selectUnitForm');
+        const unitSelect = document.getElementById('unit_number');
+        
+        // Validación básica del lado del cliente
+        form.addEventListener('submit', function(e) {
+            if (!unitSelect.value) {
+                e.preventDefault();
+                alert('Por favor selecciona un número de unidad');
+                unitSelect.focus();
+                return false;
+            }
+        });
+    });
+</script>
+{% endblock %}

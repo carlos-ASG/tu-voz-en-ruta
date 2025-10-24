@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import Organization, Route, Unit
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.forms import UserCreationForm
 
 User = get_user_model()
 
@@ -10,8 +11,8 @@ User = get_user_model()
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
     # show organization and is_president in list display
-    list_display = ('username', 'email', 'first_name', 'last_name', 'organization', 'is_president', 'is_staff')
-    list_display_staff = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_president')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'organization', 'is_president', 'is_staff', 'is_active')
+    list_display_staff = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_president', 'is_active')
     
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'organization')
     list_filter_staff = ('is_staff', 'is_active')
@@ -24,7 +25,10 @@ class UserAdmin(DjangoUserAdmin):
     )
 
     fieldsets_without_permissions = (
-        (None, {'fields': ('username','password')}),
+        # For the change view we must reference the model field 'password' (password1/password2
+        # are form-only fields used by the add form). Using password1/password2 here caused
+        # a FieldError in the admin change view.
+        (None, {'fields': ('username', 'password')}),
         ('Informacion personal', {'fields': ('first_name', 'last_name', 'email')}),
         ('Permisos', {'fields': ('is_active', 'is_staff')}),
         ('Fechas importantes', {'fields': ('last_login', 'date_joined')}),
@@ -33,6 +37,7 @@ class UserAdmin(DjangoUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
+            # For the add view we'll use the UserCreationForm which expects password1/password2
             'fields': ('username', 'organization', 'password1', 'password2'),
         }),
     )
@@ -44,11 +49,21 @@ class UserAdmin(DjangoUserAdmin):
         }),
     )
 
+    # Use Django's UserCreationForm for the add view so password1/password2 are available
+    add_form = UserCreationForm
+
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('username',)
     
     def get_fieldsets(self, request, obj=None):
         """ Controla los fieldsets de la vista de EDICIÓN (Change View). """
+        # If obj is None -> we are in the ADD view. Use add_fieldsets there.
+        if obj is None:
+            if request.user.is_superuser:
+                return self.add_fieldsets
+            return self.add_fieldsets_without_organization
+
+        # Otherwise we're in the CHANGE view.
         if request.user.is_superuser:
             return self.fieldsets
 
@@ -96,8 +111,9 @@ class UserAdmin(DjangoUserAdmin):
 
     def save_model(self, request, obj, form, change):
         # Non-superusers cannot set arbitrary organization; force their organization
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and request.user.is_president:
             obj.organization = request.user.organization
+            obj.is_staff = True
         super().save_model(request, obj, form, change)
 
 

@@ -1,0 +1,149 @@
+.success-section {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.success-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleIn 0.5s ease-out;
+}
+
+.success-icon svg {
+    width: 50px;
+    height: 50px;
+    stroke: white;
+    stroke-width: 3;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-title {
+    font-size: 2rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.success-message {
+    background: #f7fafc;
+    border-left: 4px solid #667eea;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.success-message p {
+    margin: 0.5rem 0;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.complaint-confirmation {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+}
+
+.info-icon {
+    width: 24px;
+    height: 24px;
+    stroke: #f59e0b;
+    flex-shrink: 0;
+}
+
+.complaint-confirmation p {
+    margin: 0;
+    color: #92400e;
+    font-size: 0.95rem;
+}
+
+.stats-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.success-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.success-actions .btn {
+    min-width: 180px;
+}
+
+@media (max-width: 640px) {
+    .success-title {
+        font-size: 1.5rem;
+    }
+
+    .success-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .success-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .success-actions {
+        flex-direction: column;
+    }
+
+    .success-actions .btn {
+        width: 100%;
+    }
+}

@@ -1,47 +1,27 @@
+{% extends 'interview/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuesta de Satisfacción - Buzón de Quejas</title>
-    <link rel="stylesheet" href="{% static 'interview/css/form_style.css' %}">
-</head>
-<body>
-    <div class="form-container">
-        <header class="form-header">
-            <h1>Encuesta de Satisfacción del Servicio</h1>
-            <p class="subtitle">Tu opinión es importante para mejorar nuestro servicio</p>
-        </header>
 
-        <form method="post" action="{% url 'interview:submit_survey' %}" class="survey-form" id="surveyForm">
-            {% csrf_token %}
-            
-            <!-- Sección 1: Selección de unidad -->
-            <section class="form-section unit-section">
-                <h2 class="section-title">
-                    <span class="section-number">1</span>
-                    Información del Viaje
-                </h2>
-                <div class="form-group">
-                    <label for="unit_number" class="required">Número de Unidad</label>
-                    <select name="unit_number" id="unit_number" required class="form-control">
-                        <option value="">-- Selecciona la unidad --</option>
-                        {% for unit in units %}
-                        <option value="{{ unit.id }}">
-                            Unidad {{ unit.unit_number }}
-                            {% if unit.route %} - Ruta: {{ unit.route.name }}{% endif %}
-                        </option>
-                        {% endfor %}
-                    </select>
-                    <small class="help-text">Selecciona el número de la unidad en la que viajaste</small>
-                </div>
-            </section>
+{% block title %}Encuesta de Satisfacción - Unidad {{ unit.unit_number }}{% endblock %}
 
-            <!-- Sección 2: Preguntas de la encuesta -->
+{% block content %}
+<form method="post" action="{% url 'interview:submit_survey' organization_id=organization_id unit_id=unit_id %}" class="survey-form" id="surveyForm">
+    {% csrf_token %}
+    
+    <!-- Información de la unidad seleccionada -->
+    <section class="form-section unit-info-section">
+        <div class="unit-info-box">
+            <p><strong>Unidad seleccionada:</strong> {{ unit.unit_number }}</p>
+            {% if unit.route %}
+            <p><strong>Ruta:</strong> {{ unit.route.name }}</p>
+            {% endif %}
+            <p><small><a href="{% url 'interview:select_unit' %}">← Cambiar unidad</a></small></p>
+        </div>
+    </section>
+
+            <!-- Sección: Preguntas de la encuesta -->
             <section class="form-section questions-section">
                 <h2 class="section-title">
-                    <span class="section-number">2</span>
+                    <span class="section-number">1</span>
                     Califica tu Experiencia
                 </h2>
                 
@@ -60,7 +40,7 @@
                         {% if question.type == 'rating' %}
                         <!-- Tipo: Calificación (estrellas/escala) -->
                         <div class="rating-input">
-                            <input type="hidden" name="question_{{ question.id }}_rating" id="rating_{{ question.id }}" required>
+                            <input type="hidden" name="question_{{ question.id }}" id="rating_{{ question.id }}" required>
                             <div class="rating-stars" data-question="{{ question.id }}">
                                 <button type="button" class="star" data-value="1" aria-label="1 estrella">
                                     <svg class="star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -94,7 +74,7 @@
                         {% elif question.type == 'text' %}
                         <!-- Tipo: Texto libre -->
                         <textarea 
-                            name="question_{{ question.id }}_text" 
+                            name="question_{{ question.id }}" 
                             id="text_{{ question.id }}" 
                             class="form-control textarea-input" 
                             rows="3" 
@@ -109,7 +89,7 @@
                             <label class="option-item">
                                 <input 
                                     type="radio" 
-                                    name="question_{{ question.id }}_choice" 
+                                    name="question_{{ question.id }}" 
                                     value="{{ option.id }}"
                                     id="option_{{ option.id }}"
                                 >
@@ -125,7 +105,7 @@
                             <label class="option-item">
                                 <input 
                                     type="checkbox" 
-                                    name="question_{{ question.id }}_multichoice" 
+                                    name="question_{{ question.id }}" 
                                     value="{{ option.id }}"
                                     id="option_{{ option.id }}"
                                 >
@@ -139,10 +119,10 @@
                 {% endfor %}
             </section>
 
-            <!-- Sección 3: Quejas (opcional) -->
+            <!-- Sección: Quejas (opcional) -->
             <section class="form-section complaint-section">
                 <h2 class="section-title">
-                    <span class="section-number">3</span>
+                    <span class="section-number">2</span>
                     ¿Tienes alguna queja o sugerencia?
                 </h2>
                 <p class="section-description">
@@ -192,21 +172,9 @@
                 </button>
             </div>
         </form>
+{% endblock %}
 
-        <footer class="form-footer">
-            <p>Gracias por tu participación. Tu opinión nos ayuda a mejorar.</p>
-            <p class="admin-link-container">
-                <a href="{% url 'admin:index' %}" class="admin-link" title="Panel de Administración">
-                    <svg class="admin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                    Administración
-                </a>
-            </p>
-        </footer>
-    </div>
-
+{% block extra_js %}
     <script>
         // Script para manejar calificación con estrellas
         document.addEventListener('DOMContentLoaded', function() {
@@ -259,16 +227,8 @@
             // Validación del formulario
             const form = document.getElementById('surveyForm');
             form.addEventListener('submit', function(e) {
-                const unitSelect = document.getElementById('unit_number');
-                if (!unitSelect.value) {
-                    e.preventDefault();
-                    alert('Por favor selecciona un número de unidad');
-                    unitSelect.focus();
-                    return;
-                }
-                
                 // Validar que todas las preguntas requeridas estén respondidas
-                const ratingInputs = document.querySelectorAll('input[name^="question_"][name$="_rating"]');
+                const ratingInputs = document.querySelectorAll('input[name^="question_"][type="hidden"]');
                 let allRated = true;
                 ratingInputs.forEach(input => {
                     if (!input.value) {
@@ -290,5 +250,4 @@
             }
         });
     </script>
-</body>
-</html>
+{% endblock %}

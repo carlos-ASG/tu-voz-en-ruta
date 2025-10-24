@@ -1,0 +1,87 @@
+{% extends 'interview/base.html' %}
+{% load static %}
+
+{% block title %}¡Gracias por tu participación! - Encuesta de Satisfacción{% endblock %}
+
+{% block header_title %}¡Encuesta Enviada!{% endblock %}
+{% block header_subtitle %}Tu opinión ha sido registrada exitosamente{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'interview/css/thanks.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="form-section success-section">
+    <div class="success-container">
+        <!-- Ícono de éxito -->
+        <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        </div>
+
+        <!-- Mensaje principal -->
+        <h2 class="success-title">¡Gracias por tu participación!</h2>
+        
+        <div class="success-message">
+            <p>Tu encuesta ha sido enviada correctamente y será revisada por nuestro equipo.</p>
+            <p>Tu opinión es muy valiosa y nos ayuda a mejorar continuamente nuestro servicio.</p>
+        </div>
+
+        <!-- Información adicional si hay queja -->
+        {% if has_complaint %}
+        <div class="complaint-confirmation">
+            <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <p>Tu queja o sugerencia ha sido registrada y será atendida a la brevedad posible.</p>
+        </div>
+        {% endif %}
+
+        <!-- Estadísticas opcionales (si las quieres mostrar) -->
+        {% if show_stats %}
+        <div class="stats-box">
+            <div class="stat-item">
+                <span class="stat-number">{{ total_submissions }}</span>
+                <span class="stat-label">Encuestas completadas hoy</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Acciones -->
+        <div class="form-actions success-actions">
+            <a href="{% url 'interview:select_unit' %}" class="btn btn-primary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                Evaluar otra unidad
+            </a>
+            
+{% comment %}             <a href="{% url 'admin:index' %}" class="btn btn-secondary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Ir al inicio
+            </a> {% endcomment %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-scroll al inicio de la página al cargar
+    document.addEventListener('DOMContentLoaded', function() {
+        window.scrollTo(0, 0);
+        
+        // Opcional: redirección automática después de cierto tiempo
+        // setTimeout(function() {
+        //     window.location.href = "{% url 'interview:select_unit' %}";
+        // }, 10000); // 10 segundos
+    });
+</script>
+{% endblock %}

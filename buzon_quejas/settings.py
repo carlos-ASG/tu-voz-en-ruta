@@ -231,7 +231,7 @@ JAZZMIN_SETTINGS = {
         # Organization app icons (added)
         "organization": "fas fa-building",
         "organization.organization": "fas fa-building",
-        "organization.route": "fas fa-road",
+        "organization.route": "fas fa-route",
         "organization.unit": "fas fa-bus",
         "organization.user": "fas fa-user",
     },
