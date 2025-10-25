@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'interview.apps.InterviewConfig',
     'organization.apps.OrganizationConfig',
+    'statistical_summary.apps.StatisticalSummaryConfig',
 ]
 
 MIDDLEWARE = [
@@ -164,8 +165,11 @@ JAZZMIN_SETTINGS = {
         # Url that gets reversed (Permissions can be added)
         {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
 
-        # external url that opens in a new window (Permissions can be added)
-        {"name": "Support", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
+        # Link directo al dashboard de estadísticas
+        {"name": "📊 Estadísticas", "url": "/stats/dashboard/", "new_window": False},
+
+        # Link directo al sitio público / aplicación (vista que muestra selección de unidad)
+        {"name": "Inicio", "url": "interview:select_unit", "new_window": False},
 
         # model admin to link to (Permissions checked against model)
         {"model": "auth.User"},

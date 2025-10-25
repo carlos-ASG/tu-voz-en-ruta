@@ -1,7 +1,5 @@
 from django import forms
-from ..models import Question, QuestionOption, ComplaintReason, Answer
-from organization.models import Unit
-
+from ..models import Question, ComplaintReason
 
 class SurveyForm(forms.Form):
     """

@@ -1,0 +1,297 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'statistical_summary/styles.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if not has_data %}
+        <div class="alert alert-danger">
+            <h3>❌ Error</h3>
+            <p>{{ error_message }}</p>
+        </div>
+    {% else %}
+        <!-- Header Section -->
+        <div class="dashboard-header">
+            <h1>📊 Dashboard de Estadísticas</h1>
+            <p class="organization-name">Organización: <strong>{{ organization_name }}</strong></p>
+        </div>
+
+        <!-- Filtros de Período -->
+        <div class="period-filters">
+            <h3>📅 Filtrar por Período:</h3>
+            <div class="filter-buttons">
+                <a href="?period=today" class="filter-btn {% if period == 'today' %}active{% endif %}">Hoy</a>
+                <a href="?period=week" class="filter-btn {% if period == 'week' %}active{% endif %}">Esta Semana</a>
+                <a href="?period=month" class="filter-btn {% if period == 'month' %}active{% endif %}">Este Mes</a>
+                <a href="?period=year" class="filter-btn {% if period == 'year' %}active{% endif %}">Este Año</a>
+                <a href="?period=all" class="filter-btn {% if period == 'all' %}active{% endif %}">Todo el Tiempo</a>
+            </div>
+            <p class="current-period">Mostrando datos de: <strong>{{ period_label }}</strong></p>
+        </div>
+
+        <!-- KPIs Section -->
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-primary">
+                <div class="kpi-icon">📝</div>
+                <div class="kpi-content">
+                    <h3>{{ total_submissions }}</h3>
+                    <p>Envíos de Encuestas</p>
+                </div>
+            </div>
+
+            <div class="kpi-card kpi-warning">
+                <div class="kpi-icon">⚠️</div>
+                <div class="kpi-content">
+                    <h3>{{ total_complaints }}</h3>
+                    <p>Total de Quejas</p>
+                </div>
+            </div>
+
+            <div class="kpi-card kpi-success">
+                <div class="kpi-icon">⭐</div>
+                <div class="kpi-content">
+                    <h3>{{ avg_rating }}</h3>
+                    <p>Calificación Promedio</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <!-- Chart 1: Top 5 Motivos de Queja -->
+            <div class="chart-card">
+                <h3>🔴 Top 5 Motivos de Queja</h3>
+                <canvas id="chart1"></canvas>
+            </div>
+
+            <!-- Chart 2: Top 5 Unidades con más Quejas -->
+            <div class="chart-card">
+                <h3>🚌 Top 5 Unidades con Más Quejas</h3>
+                <canvas id="chart2"></canvas>
+            </div>
+
+            <!-- Chart 3: Envíos por Día -->
+            <div class="chart-card chart-wide">
+                <h3>📈 Línea de Tiempo de Envíos</h3>
+                <canvas id="chart3"></canvas>
+            </div>
+
+            <!-- Chart 4: Calificación Promedio por Pregunta -->
+            <div class="chart-card">
+                <h3>📊 Calificación Promedio por Pregunta</h3>
+                <canvas id="chart4"></canvas>
+            </div>
+
+            <!-- Chart 5: Distribución de Respuestas (Pie) -->
+            <div class="chart-card">
+                <h3>🥧 Distribución de Respuestas</h3>
+                {% if chart5_question_text %}
+                    <p class="chart-subtitle">{{ chart5_question_text }}</p>
+                {% else %}
+                    <p class="chart-subtitle text-muted">No hay preguntas de tipo opción activas</p>
+                {% endif %}
+                <canvas id="chart5"></canvas>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+{% if has_data %}
+    // Configuración de colores y estilos comunes
+    const chartColors = {
+        primary: '#3498db',
+        success: '#2ecc71',
+        warning: '#f39c12',
+        danger: '#e74c3c',
+        info: '#1abc9c',
+        purple: '#9b59b6',
+        pink: '#e91e63',
+        orange: '#ff5722'
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+            }
+        }
+    };
+
+    // ==================== CHART 1: Top 5 Motivos de Queja (Barras Horizontales) ====================
+    const ctx1 = document.getElementById('chart1').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: {{ chart1_labels|safe }},
+            datasets: [{
+                label: 'Número de Quejas',
+                data: {{ chart1_data|safe }},
+                backgroundColor: [
+                    chartColors.danger,
+                    chartColors.warning,
+                    chartColors.info,
+                    chartColors.purple,
+                    chartColors.pink
+                ],
+                borderColor: [
+                    chartColors.danger,
+                    chartColors.warning,
+                    chartColors.info,
+                    chartColors.purple,
+                    chartColors.pink
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...chartOptions,
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // ==================== CHART 2: Top 5 Unidades con más Quejas (Barras) ====================
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: {{ chart2_labels|safe }},
+            datasets: [{
+                label: 'Número de Quejas',
+                data: {{ chart2_data|safe }},
+                backgroundColor: chartColors.warning,
+                borderColor: chartColors.warning,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // ==================== CHART 3: Envíos por Día (Línea) ====================
+    const ctx3 = document.getElementById('chart3').getContext('2d');
+    new Chart(ctx3, {
+        type: 'line',
+        data: {
+            labels: {{ chart3_labels|safe }},
+            datasets: [{
+                label: 'Envíos de Encuestas',
+                data: {{ chart3_data|safe }},
+                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                borderColor: chartColors.primary,
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // ==================== CHART 4: Calificación Promedio por Pregunta (Radar) ====================
+    const ctx4 = document.getElementById('chart4').getContext('2d');
+    new Chart(ctx4, {
+        type: 'radar',
+        data: {
+            labels: {{ chart4_labels|safe }},
+            datasets: [{
+                label: 'Calificación Promedio',
+                data: {{ chart4_data|safe }},
+                backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                borderColor: chartColors.success,
+                borderWidth: 2,
+                pointBackgroundColor: chartColors.success,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: chartColors.success
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 5,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // ==================== CHART 5: Distribución de Respuestas (Pie/Dona) ====================
+    const ctx5 = document.getElementById('chart5').getContext('2d');
+    new Chart(ctx5, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart5_labels|safe }},
+            datasets: [{
+                label: 'Respuestas',
+                data: {{ chart5_data|safe }},
+                backgroundColor: [
+                    chartColors.primary,
+                    chartColors.success,
+                    chartColors.warning,
+                    chartColors.danger,
+                    chartColors.info,
+                    chartColors.purple,
+                    chartColors.pink,
+                    chartColors.orange
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            ...chartOptions,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+{% endif %}
+</script>
+{% endblock %}
+{% endblock %}

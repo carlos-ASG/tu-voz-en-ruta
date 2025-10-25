@@ -119,13 +119,14 @@ def submit_survey(request, organization_id, unit_id):
                 
                 elif question.type == Question.QuestionType.CHOICE:
                     # Opción única (ModelChoiceField devuelve un QuestionOption)
+                    # Usar el nuevo campo selected_option (ForeignKey) en lugar de M2M
                     if field_value:
-                        answer = Answer.objects.create(
+                        Answer.objects.create(
                             submission=submission,
                             question=question,
+                            selected_option=field_value,  # Ahora es FK directo
                             organization=organization
                         )
-                        answer.selected_options.add(field_value)
                 
                 elif question.type == Question.QuestionType.MULTI_CHOICE:
                     # Múltiples opciones (ModelMultipleChoiceField devuelve QuerySet)
