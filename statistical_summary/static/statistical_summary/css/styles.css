@@ -6,6 +6,19 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Root variables and page background */
+:root{
+    --page-bg: #f5f7fa; /* suave grisáceo */
+    --card-bg: #ffffff;
+    --accent: #3498db;
+}
+
+/* Aplicar fondo gris claro a toda la página para un contraste sutil */
+body {
+    background-color: var(--page-bg);
+    color: #222;
+}
+
 /* ==================== Header ==================== */
 .dashboard-header {
     text-align: center;
@@ -69,9 +82,10 @@
 }
 
 .filter-btn.active {
-    background: #3498db;
-    color: white;
-    border-color: #3498db;
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+    box-shadow: 0 6px 14px rgba(52,152,219,0.12);
 }
 
 .current-period {
@@ -197,6 +211,164 @@ canvas {
     margin-top: 0;
 }
 
+/* ==================== Questions Statistics Section ==================== */
+.questions-section {
+    margin-top: 40px;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #3498db;
+}
+
+.questions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.question-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    position: relative;
+}
+
+.question-card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    transform: translateY(-3px);
+}
+
+.question-title {
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    font-weight: 600;
+    padding-right: 120px;
+}
+
+.question-type-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #3498db;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+/* Rating Display */
+.rating-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 15px;
+}
+
+.rating-value {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.rating-icon {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+/* Canvas for charts */
+.question-card canvas {
+    max-height: 300px;
+    margin-top: 20px;
+}
+
+.no-data-message {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px 20px;
+    margin: 0;
+}
+
+/* ==================== Nav superior (volver al admin) ==================== */
+.top-navbar{
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.top-navbar-inner{
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+}
+.top-nav-link{
+    color: #1f6feb;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    /* Botón visual */
+    background: linear-gradient(180deg, #ffffff 0%, #f1f9ff 100%);
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(31,111,235,0.12);
+    box-shadow: 0 2px 6px rgba(31,111,235,0.06);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    gap: 10px;
+}
+.top-nav-link:hover{
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(31,111,235,0.12);
+    background: linear-gradient(180deg, #eef8ff 0%, #e6f3ff 100%);
+}
+
+/* Focus visible para accesibilidad (keyboard) */
+.top-nav-link:focus{
+    outline: 3px solid rgba(52,152,219,0.18);
+    outline-offset: 2px;
+}
+
+/* Pequeño icono a la izquierda usando pseudo-elemento (flecha) */
+.top-nav-link::before{
+    content: '\2190'; /* Unicode left arrow */
+    display: inline-block;
+    margin-right: 6px;
+    font-weight: 700;
+    color: #1f6feb;
+    transform: translateY(1px);
+}
+
+/* Variante compacta en pantallas pequeñas */
+@media (max-width: 480px) {
+    .top-nav-link{
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Evitar que el contenido quede oculto detrás del navbar */
+.dashboard-container{
+    padding-top: 90px; /* Ajusta si cambias la altura del navbar */
+}
+
 /* ==================== Responsive Design ==================== */
 @media (max-width: 1200px) {
     .chart-wide {
@@ -231,6 +403,21 @@ canvas {
     
     canvas {
         max-height: 300px;
+    }
+
+    .questions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .question-title {
+        padding-right: 0;
+        margin-bottom: 35px;
+    }
+
+    .question-type-badge {
+        top: auto;
+        bottom: 20px;
+        right: 20px;
     }
 }
 

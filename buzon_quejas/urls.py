@@ -23,5 +23,6 @@ urlpatterns = [
     # Redirect root URL to the interview app
     path('', RedirectView.as_view(url='/interview/', permanent=False)),
     path('interview/', include('interview.urls')),
-    path('stats/', include('statistical_summary.urls')),
+    # Statistical summary dashboard
+    path('statistical-summary/', include('statistical_summary.urls')),
 ]
