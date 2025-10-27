@@ -140,20 +140,21 @@ def submit_survey(request, organization_id, unit_id):
             
             # 3. Procesar la queja (si existe)
             complaint_reason = form.cleaned_data.get('complaint_reason')
-            complaint_text = form.cleaned_data.get('complaint_text', '').strip()
+            complaint_text = form.cleaned_data.get('complaint_text', '').strip() if form.cleaned_data.get('complaint_text') else ''
             
-            if complaint_reason and complaint_text:
+            # Crear queja si hay un motivo seleccionado (el texto es opcional)
+            if complaint_reason:
                 Complaint.objects.create(
                     unit=unit,
                     reason=complaint_reason,
-                    text=complaint_text,
+                    text=complaint_text,  # Puede ser vacío
                     organization=organization
                 )
             
             messages.success(request, '¡Gracias! Tu encuesta ha sido enviada correctamente.')
             
             # Guardar información en la sesión para la vista de agradecimiento
-            request.session['has_complaint'] = bool(complaint_reason and complaint_text)
+            request.session['has_complaint'] = bool(complaint_reason)
             request.session['submission_success'] = True
             
             # Redirigir a la vista de agradecimiento
@@ -195,23 +196,31 @@ def thank_you(request):
     submission_success = request.session.get('submission_success', False)
     has_complaint = request.session.get('has_complaint', False)
     
-    # Limpiar la sesión para evitar accesos directos repetidos
-    if 'submission_success' in request.session:
-        del request.session['submission_success']
-    if 'has_complaint' in request.session:
-        del request.session['has_complaint']
-    
-    # Opcional: obtener estadísticas del día (si quieres mostrarlas)
+    # Obtener estadísticas del día ANTES de limpiar la sesión
     from django.utils import timezone
-    today = timezone.now().date()
-    total_submissions = SurveySubmission.objects.filter(
-        submitted_at__date=today
-    ).count() if submission_success else 0
+    import pytz
     
+    # Obtener la zona horaria configurada en settings
+    tz = pytz.timezone('America/Mazatlan')
+    now = timezone.now().astimezone(tz)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Contar envíos de hoy (en la zona horaria local)
+    total_submissions = SurveySubmission.objects.filter(
+        submitted_at__gte=today_start
+    ).count()
+    
+    # Preparar contexto ANTES de limpiar sesión
     context = {
         'has_complaint': has_complaint,
         'show_stats': submission_success,  # Solo mostrar stats si viene de un envío real
         'total_submissions': total_submissions,
     }
+    
+    # Limpiar la sesión DESPUÉS de preparar el contexto
+    if 'submission_success' in request.session:
+        del request.session['submission_success']
+    if 'has_complaint' in request.session:
+        del request.session['has_complaint']
     
     return render(request, 'interview/thank_view.html', context)
