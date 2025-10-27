@@ -34,7 +34,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "tu-voz-en-ruta.onrender.com"]
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -144,7 +144,8 @@ JAZZMIN_SETTINGS = {
     "copyright": "C.S. code",
     # List of model admins to search from the search bar, search bar omitted if excluded
     # If you want to use a single search field you dont need to use a list, you can use a simple string
-    "search_model": ["auth.User", "auth.Group"],
+    # Dejar vacío o comentar para ocultar la barra de búsqueda del navbar
+    # "search_model": ["auth.User", "auth.Group"],
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
     "user_avatar": None,
     ############
@@ -155,9 +156,9 @@ JAZZMIN_SETTINGS = {
         # Url that gets reversed (Permissions can be added)
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
         # Link directo al dashboard de estadísticas
-        {"name": "📊 Estadísticas", "url": "/statistical-summary/dashboard/", "new_window": False},
+        {"name": "Estadísticas", "url": "/statistical-summary/dashboard/", "new_window": False},
         # Link directo al sitio público / aplicación (vista que muestra selección de unidad)
-        {"name": "Inicio", "url": "interview:select_unit", "new_window": True},
+        {"name": "Ver encuesta", "url": "interview:select_unit", "new_window": True},
         # model admin to link to (Permissions checked against model)
         {"model": "auth.User"},
         # App with dropdown menu to all its models pages (Permissions checked against models)
@@ -168,11 +169,9 @@ JAZZMIN_SETTINGS = {
     #############
     # Additional links to include in the user menu on the top right ("app" url type is not allowed)
     "usermenu_links": [
-        {
-            "name": "Support",
-            "url": "https://github.com/farridav/django-jazzmin/issues",
-            "new_window": True,
-        },
+        # Enlaces duplicados para acceso móvil
+        {"name": "Estadísticas", "url": "/statistical-summary/dashboard/", "new_window": False, "icon": "fas fa-chart-pie"},
+        {"name": "Ver encuesta", "url": "interview:select_unit", "new_window": True, "icon": "fas fa-poll"},
         {"model": "auth.user"},
     ],
     #############

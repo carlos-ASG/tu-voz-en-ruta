@@ -49,6 +49,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     margin-bottom: 30px;
+    overflow: hidden; /* Prevenir overflow en móviles */
 }
 
 .period-filters h3 {
@@ -73,6 +74,7 @@ body {
     font-weight: 500;
     transition: all 0.3s ease;
     border: 2px solid transparent;
+    box-sizing: border-box; /* Incluir padding y border en el ancho */
 }
 
 .filter-btn:hover {
@@ -149,47 +151,7 @@ body {
     border-left: 5px solid #2ecc71;
 }
 
-/* ==================== Charts Grid ==================== */
-.charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
-}
-
-.chart-card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-    transition: box-shadow 0.3s ease;
-}
-
-.chart-card:hover {
-    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-}
-
-.chart-card h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #333;
-    font-size: 1.3rem;
-    font-weight: 600;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 10px;
-}
-
-.chart-subtitle {
-    font-size: 0.9rem;
-    color: #666;
-    margin: -10px 0 15px 0;
-    font-style: italic;
-}
-
-.chart-wide {
-    grid-column: span 2;
-}
-
+/* Canvas default sizing for chart elements */
 canvas {
     max-height: 350px;
 }
@@ -366,77 +328,291 @@ canvas {
 
 /* Evitar que el contenido quede oculto detrás del navbar */
 .dashboard-container{
-    padding-top: 90px; /* Ajusta si cambias la altura del navbar */
+    padding-top: 30px;
 }
 
 /* ==================== Responsive Design ==================== */
-@media (max-width: 1200px) {
-    .chart-wide {
-        grid-column: span 1;
+
+/* Tablets y pantallas medianas (hasta 1024px) */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        padding: 15px;
+        padding-top: 20px;
     }
     
-    .charts-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    .questions-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 }
 
+/* Tablets pequeños y móviles grandes (hasta 768px) */
 @media (max-width: 768px) {
+    /* Header más compacto */
+    .dashboard-header {
+        padding: 20px 15px;
+        margin-bottom: 20px;
+    }
+    
     .dashboard-header h1 {
         font-size: 1.8rem;
     }
     
-    .kpi-grid {
-        grid-template-columns: 1fr;
+    .organization-name {
+        font-size: 1rem;
     }
     
-    .charts-grid {
+    /* KPI Cards: una columna vertical */
+    .kpi-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .kpi-card {
+        padding: 20px;
+    }
+    
+    .kpi-content h3 {
+        font-size: 1.8rem;
+    }
+    
+    /* Filtros de período: menú vertical */
+    .period-filters {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .period-filters h3 {
+        font-size: 1.2rem;
     }
     
     .filter-buttons {
         flex-direction: column;
+        gap: 8px;
+        margin: 15px 0 10px 0; /* Reducir márgenes */
     }
     
     .filter-btn {
         text-align: center;
+        width: 100%;
+        max-width: 100%; /* Asegurar que no exceda el contenedor */
+        padding: 12px 10px; /* Reducir padding horizontal */
+        box-sizing: border-box;
+    }
+    
+    .current-period {
+        font-size: 0.95rem;
+        text-align: center;
+    }
+    
+    /* Questions grid: una columna vertical */
+    .questions-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .question-card {
+        padding: 20px;
     }
     
     canvas {
-        max-height: 300px;
-    }
-
-    .questions-grid {
-        grid-template-columns: 1fr;
+        max-height: 280px;
     }
 
     .question-title {
         padding-right: 0;
-        margin-bottom: 35px;
+        margin-bottom: 20px;
+        font-size: 1rem;
     }
 
     .question-type-badge {
-        top: auto;
-        bottom: 20px;
+        /* Mantener en la esquina superior derecha */
+        top: 20px;
         right: 20px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    /* Navbar responsive */
+    .top-navbar-inner {
+        padding: 10px 15px;
     }
 }
 
+/* Móviles (hasta 480px) */
 @media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+    
     .dashboard-container {
         padding: 10px;
+        padding-top: 15px;
+    }
+    
+    /* Header ultra-compacto */
+    .dashboard-header {
+        padding: 15px 10px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+    
+    .organization-name {
+        font-size: 0.9rem;
+    }
+    
+    /* KPI cards: stack vertical completo */
+    .kpi-grid {
+        gap: 12px;
+        margin-bottom: 15px;
     }
     
     .kpi-card {
         flex-direction: column;
         text-align: center;
+        padding: 18px 15px;
+        gap: 12px;
     }
     
-    .chart-card {
+    .kpi-icon {
+        font-size: 2.5rem;
+    }
+    
+    .kpi-content h3 {
+        font-size: 1.6rem;
+    }
+    
+    .kpi-content p {
+        font-size: 0.9rem;
+    }
+    
+    /* Filtros: menú vertical compacto */
+    .period-filters {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .period-filters h3 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+    
+    .filter-buttons {
+        gap: 6px;
+        margin: 10px 0;
+    }
+    
+    .filter-btn {
+        padding: 10px 8px; /* Reducir aún más el padding horizontal */
+        font-size: 0.9rem;
+        border-radius: 6px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .current-period {
+        font-size: 0.85rem;
+        margin-top: 8px;
+    }
+    
+    /* Questions: stack vertical */
+    .questions-section {
+        margin-top: 20px;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+    }
+    
+    .questions-grid {
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .question-card {
         padding: 15px;
     }
     
-    .dashboard-header {
+    .question-title {
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+        padding-right: 100px; /* Espacio para el badge */
+    }
+    
+    .question-type-badge {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        /* Mantener en esquina superior derecha */
+        top: 15px;
+        right: 15px;
+    }
+    
+    .rating-display {
+        padding: 30px 15px;
+        gap: 12px;
+    }
+    
+    .rating-value {
+        font-size: 2.5rem;
+    }
+    
+    .rating-icon {
+        font-size: 2.5rem;
+    }
+    
+    .question-card canvas {
+        max-height: 250px;
+        margin-top: 15px;
+    }
+    
+    /* Navbar móvil */
+    .top-navbar-inner {
+        padding: 8px 10px;
+    }
+    
+    .top-nav-link {
+        font-size: 0.85rem;
+        padding: 6px 10px;
+    }
+    
+    /* Alertas */
+    .alert {
         padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .alert h3 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Móviles muy pequeños (hasta 360px) */
+@media (max-width: 360px) {
+    .dashboard-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .kpi-content h3 {
+        font-size: 1.4rem;
+    }
+    
+    .filter-btn {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+    
+    .question-card canvas {
+        max-height: 220px;
     }
 }
 
@@ -446,8 +622,7 @@ canvas {
         display: none;
     }
     
-    .kpi-card,
-    .chart-card {
+    .kpi-card {
         box-shadow: none;
         border: 1px solid #ddd;
         page-break-inside: avoid;

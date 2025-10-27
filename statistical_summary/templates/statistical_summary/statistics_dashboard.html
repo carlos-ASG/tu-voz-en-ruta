@@ -1,18 +1,17 @@
 {% load static %}
-{% block title %}{{ title }}{% endblock %}
-
-{% block extrastyle %}
-<link rel="stylesheet" href="{% static 'statistical_summary/css/styles.css' %}">
-{% endblock %}
-
-{% block extrahead %}
-<!-- Chart.js CDN (genérico en jsdelivr) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Plugin para mostrar etiquetas dentro de las gráficas -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-{% endblock %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{% static 'statistical_summary/css/styles.css' %}">
+    <!-- Chart.js CDN (genérico en jsdelivr) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Plugin para mostrar etiquetas dentro de las gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+</head>
+<body>
 <!-- NAVBAR SUPERIOR: enlace rápido al panel de administración -->
 <nav class="top-navbar" role="navigation" aria-label="Admin navigation">
   <div class="top-navbar-inner">
@@ -30,7 +29,6 @@
         <!-- Header Section -->
         <div class="dashboard-header">
             <h1>📊 Dashboard de Estadísticas</h1>
-            <p class="organization-name">Organización: <strong>{{ organization_name }}</strong></p>
         </div>
 
         <!-- Filtros de Período -->
@@ -94,8 +92,8 @@
         </div>
         {% endif %}
     {% endif %}
-{% endblock %}
+</div>
 
-{% block extra_js %}
 <script src="{% static 'statistical_summary/js/dashboard_charts.js' %}"></script>
-{% endblock %}
+</body>
+</html>
