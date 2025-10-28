@@ -9,39 +9,38 @@ from interview.models.survey_submission import SurveySubmission
 from interview.models.question import Question
 from interview.models.answer import Answer
 from interview.models.question_option import QuestionOption
+from organization.models import Route, Unit
 import pytz
 
 
-def calculate_statistics(period: str, organization: str) -> dict:
+def calculate_statistics(period: str, organization: str, route_id: str = None, unit_id: str = None) -> dict:
     start_date, period_label = get_start_date(period)
 
-    # Si start_date es None (period='all'), no filtrar por fecha
+    # Base queryset filters
+    submissions_filters = {'organization': organization}
+    complaints_filters = {'organization': organization}
+    
+    # Agregar filtro de fecha si existe
     if start_date:
+        submissions_filters['submitted_at__gte'] = start_date
+        complaints_filters['submitted_at__gte'] = start_date
+    
+    # Agregar filtro por ruta o unidad (son mutuamente excluyentes)
+    if route_id:
+        submissions_filters['unit__route_id'] = route_id
+        complaints_filters['unit__route_id'] = route_id
+    elif unit_id:
+        submissions_filters['unit_id'] = unit_id
+        complaints_filters['unit_id'] = unit_id
+    
     # ==================== KPI 1: Total de Envíos de Encuestas ====================
-        
-        total_submissions = SurveySubmission.objects.filter(
-            organization=organization, submitted_at__gte=start_date
-        ).count()
-        # ==================== KPI 2: Total de Quejas ====================
-        total_complaints = Complaint.objects.filter(
-            organization=organization, submitted_at__gte=start_date
-        ).count()
-    else:
-    # ==================== KPI 1: Total de Envíos de Encuestas ====================
-        
-        total_submissions = SurveySubmission.objects.filter(
-            organization=organization
-        ).count()
-        
-        # ==================== KPI 2: Total de Quejas ====================
-        
-        total_complaints = Complaint.objects.filter(
-            organization=organization
-        ).count()
-        
-
+    total_submissions = SurveySubmission.objects.filter(**submissions_filters).count()
+    
+    # ==================== KPI 2: Total de Quejas ====================
+    total_complaints = Complaint.objects.filter(**complaints_filters).count()
+    
     # ==================== KPI 3: Resumen de Preguntas ====================
-    questions_statistics = questions_summary(organization, start_date)
+    questions_statistics = questions_summary(organization, start_date, route_id, unit_id)
 
     return {
         "period_label": period_label,
@@ -86,7 +85,7 @@ def get_start_date(period: str) -> tuple[datetime, str]:
     return start_date, period_label
 
 
-def questions_summary(organization: str, start_date: datetime) -> dict:
+def questions_summary(organization: str, start_date: datetime, route_id: str = None, unit_id: str = None) -> dict:
     """
     Recolecta estadísticas de preguntas activas según su tipo.
 
@@ -105,10 +104,18 @@ def questions_summary(organization: str, start_date: datetime) -> dict:
     statistics = {}
 
     for question in questions:
-        # Filtrar respuestas por fecha
+        # Filtrar respuestas por organización
         answers_qs = Answer.objects.filter(question=question, organization=organization)
+        
+        # Filtrar por fecha si existe
         if start_date:
             answers_qs = answers_qs.filter(created_at__gte=start_date)
+        
+        # Filtrar por ruta o unidad si existen
+        if route_id:
+            answers_qs = answers_qs.filter(submission__unit__route_id=route_id)
+        elif unit_id:
+            answers_qs = answers_qs.filter(submission__unit_id=unit_id)
 
         # Procesar según tipo de pregunta
         if question.type == Question.QuestionType.RATING:
@@ -159,3 +166,28 @@ def questions_summary(organization: str, start_date: datetime) -> dict:
         # Ignorar tipo TEXT según especificación
 
     return statistics
+
+
+def get_units_and_routes(organization) -> dict:
+    """
+    Obtiene las rutas y unidades de una organización.
+    
+    Args:
+        organization: Instancia de Organization
+        
+    Returns:
+        dict: {
+            "routes": [{"id": uuid, "name": str}, ...],
+            "units": [{"id": uuid, "number": str}, ...]
+        }
+    """
+    # Obtener rutas de la organización
+    routes = Route.objects.filter(organization=organization).order_by('name').values('id', 'name')
+    
+    # Obtener unidades de la organización
+    units = Unit.objects.filter(organization=organization).order_by('unit_number').values('id', 'unit_number')
+    
+    return {
+        "routes": list(routes),
+        "units": list(units),
+    }

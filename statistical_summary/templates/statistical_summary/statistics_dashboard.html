@@ -67,6 +67,40 @@
         {% if questions_statistics %}
         <div class="questions-section">
             <h2 class="section-title">📊 Estadísticas por Pregunta</h2>
+            
+            <!-- Filtros por Ruta/Unidad -->
+            <div class="entity-filters">
+                <label for="filterType" class="filter-label">Filtrar por:</label>
+                <select id="filterType" class="filter-select">
+                    <option value="">-- Seleccionar --</option>
+                    <option value="route" {% if selected_route %}selected{% endif %}>Rutas</option>
+                    <option value="unit" {% if selected_unit %}selected{% endif %}>Camiones</option>
+                </select>
+                
+                <!-- Select de rutas (oculto inicialmente) -->
+                <select id="routeSelect" class="filter-select entity-select" style="display: none;">
+                    <option value="">-- Seleccionar ruta --</option>
+                    {% for route in routes %}
+                    <option value="{{ route.id }}" {% if selected_route == route.id|stringformat:"s" %}selected{% endif %}>
+                        {{ route.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                
+                <!-- Select de unidades (oculto inicialmente) -->
+                <select id="unitSelect" class="filter-select entity-select" style="display: none;">
+                    <option value="">-- Seleccionar camión --</option>
+                    {% for unit in units %}
+                    <option value="{{ unit.id }}" {% if selected_unit == unit.id|stringformat:"s" %}selected{% endif %}>
+                        {{ unit.unit_number }}
+                    </option>
+                    {% endfor %}
+                </select>
+                
+                <button id="applyFilterBtn" class="btn-filter" style="display: none;">Filtrar</button>
+                <button id="clearFilterBtn" class="btn-clear-filter" style="{% if selected_route or selected_unit %}display: inline-block;{% else %}display: none;{% endif %}">Limpiar filtro</button>
+            </div>
+            
             <div class="questions-grid">
                 {% for question_text, data in questions_statistics.items %}
                     <div class="question-card" data-question-type="{{ data.type }}">
@@ -95,5 +129,73 @@
 </div>
 
 <script src="{% static 'statistical_summary/js/dashboard_charts.js' %}"></script>
+<script>
+    // Script para manejar los filtros de ruta/unidad
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterType = document.getElementById('filterType');
+        const routeSelect = document.getElementById('routeSelect');
+        const unitSelect = document.getElementById('unitSelect');
+        const applyFilterBtn = document.getElementById('applyFilterBtn');
+        const clearFilterBtn = document.getElementById('clearFilterBtn');
+        
+        // Mostrar el select correcto al cargar la página
+        if (filterType.value === 'route') {
+            routeSelect.style.display = 'inline-block';
+            applyFilterBtn.style.display = 'inline-block';
+        } else if (filterType.value === 'unit') {
+            unitSelect.style.display = 'inline-block';
+            applyFilterBtn.style.display = 'inline-block';
+        }
+        
+        // Cambiar entre ruta y unidad
+        filterType.addEventListener('change', function() {
+            // Ocultar ambos selects
+            routeSelect.style.display = 'none';
+            unitSelect.style.display = 'none';
+            applyFilterBtn.style.display = 'none';
+            
+            if (this.value === 'route') {
+                routeSelect.style.display = 'inline-block';
+                applyFilterBtn.style.display = 'inline-block';
+            } else if (this.value === 'unit') {
+                unitSelect.style.display = 'inline-block';
+                applyFilterBtn.style.display = 'inline-block';
+            }
+        });
+        
+        // Aplicar filtro
+        applyFilterBtn.addEventListener('click', function() {
+            const currentUrl = new URL(window.location.href);
+            const params = new URLSearchParams(currentUrl.search);
+            
+            // Limpiar filtros anteriores
+            params.delete('route');
+            params.delete('unit');
+            
+            // Agregar el filtro seleccionado
+            if (filterType.value === 'route' && routeSelect.value) {
+                params.set('route', routeSelect.value);
+            } else if (filterType.value === 'unit' && unitSelect.value) {
+                params.set('unit', unitSelect.value);
+            }
+            
+            // Redirigir con los nuevos parámetros
+            window.location.href = currentUrl.pathname + '?' + params.toString();
+        });
+        
+        // Limpiar filtro
+        clearFilterBtn.addEventListener('click', function() {
+            const currentUrl = new URL(window.location.href);
+            const params = new URLSearchParams(currentUrl.search);
+            
+            // Eliminar filtros de ruta y unidad
+            params.delete('route');
+            params.delete('unit');
+            
+            // Redirigir sin los filtros
+            window.location.href = currentUrl.pathname + '?' + params.toString();
+        });
+    });
+</script>
 </body>
 </html>
