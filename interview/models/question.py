@@ -2,8 +2,6 @@ from django.db import models
 import uuid
 from django.utils import timezone
 
-from organization.models import Organization
-
 
 class Question(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -26,15 +24,6 @@ class Question(models.Model):
     # timestamps managed by DB triggers; show but do not allow editing in admin
     created_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de creación')
     updated_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de actualización')
-    
-    Organization = models.ForeignKey(
-        Organization,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='questions',
-        verbose_name='Organización'
-    )
     
     def __str__(self):
         return str(self.text[:50])

@@ -1,253 +1,229 @@
 {% extends 'interview/base.html' %}
 {% load static %}
 
-{% block title %}Encuesta de Satisfacción - Unidad {{ unit.unit_number }}{% endblock %}
+{% block title %}Encuesta de Satisfacción{% endblock %}
 
 {% block content %}
-<form method="post" action="{% url 'interview:submit_survey' organization_id=organization_id unit_id=unit_id %}" class="survey-form" id="surveyForm">
+<form method="post" action="{% url 'interview:submit_survey' %}" class="survey-form" id="surveyForm">
     {% csrf_token %}
     
-    <!-- Información de la unidad seleccionada -->
+    <!-- SECCIÓN 1: Selección de Unidad -->
     <section class="form-section unit-info-section">
+        <h2 class="section-title">
+            <span class="section-number">0</span>
+            Selección de Unidad
+        </h2>
+        
+        {% if unit_id %}
+        <!-- Si ya hay unit_id, mostrar info de la unidad con campo hidden -->
         <div class="unit-info-box">
-            <p><strong>Unidad seleccionada:</strong> {{ unit.unit_number }}</p>
-            {% if unit.route %}
-            <p><strong>Ruta:</strong> {{ unit.route.name }}</p>
+            {{ unit_form.unit }}
+            
+            {% if unit_form.unit.value %}
+                <p><strong>Unidad seleccionada:</strong> {{ unit_form.unit.field.queryset.first.unit_number }}</p>
+                {% if unit_form.unit.field.queryset.first.route %}
+                <p><strong>Ruta:</strong> {{ unit_form.unit.field.queryset.first.route.name }}</p>
+                {% endif %}
             {% endif %}
-            <p><small><a href="{% url 'interview:select_unit' %}">← Cambiar unidad</a></small></p>
+        </div>
+        {% else %}
+        <!-- Si no hay unit_id, mostrar selector -->
+        <div class="form-group">
+            {{ unit_form.unit.errors }}
+            {{ unit_form.unit.label_tag }}
+            {{ unit_form.unit }}
+            {% if unit_form.unit.help_text %}
+            <small class="help-text">{{ unit_form.unit.help_text }}</small>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- SECCIÓN 2: Preguntas de la Encuesta -->
+    <section class="form-section questions-section">
+        <h2 class="section-title">
+            <span class="section-number">1</span>
+            Califica tu Experiencia
+        </h2>
+        
+        {% for question_data in survey_form.get_questions_data %}
+            {% with field=question_data.field question_obj=question_data.question_obj question_type=question_data.question_type %}
+            <div class="question-block" data-question-id="{{ question_data.question_id }}" data-question-type="{{ question_type }}">
+                <div class="question-header">
+                    <label class="question-text" for="{{ field.id_for_label }}">
+                        {{ forloop.counter }}. {{ field.label }}
+                        {% if field.field.required %}
+                        <span class="required-indicator">*</span>
+                        {% endif %}
+                    </label>
+                </div>
+
+                <div class="question-input">
+                    {% if question_type == 'rating' %}
+                    <!-- Tipo: Calificación (estrellas) -->
+                    <div class="rating-input">
+                        {{ field }}
+                        <div class="rating-stars" data-question="{{ question_data.question_id }}">
+                            {% for value in "12345" %}
+                            <button type="button" class="star" data-value="{{ value }}" aria-label="{{ value }} estrella{{ value|pluralize }}">
+                                <svg class="star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                                </svg>
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <span class="rating-label" id="ratingLabel_{{ question_data.question_id }}">Selecciona tu calificación</span>
+                    </div>
+                    
+                    {% elif question_type == 'text' %}
+                    <!-- Tipo: Texto libre -->
+                    {{ field.errors }}
+                    {{ field }}
+                    
+                    {% elif question_type == 'choice' %}
+                    <!-- Tipo: Opción única (radio) -->
+                    {{ field.errors }}
+                    <div class="options-list radio-options">
+                        {% for radio in field %}
+                        <label class="option-item">
+                            {{ radio.tag }}
+                            <span class="option-label">{{ radio.choice_label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    
+                    {% elif question_type == 'multi_choice' %}
+                    <!-- Tipo: Múltiples opciones (checkbox) -->
+                    {{ field.errors }}
+                    <div class="options-list checkbox-options">
+                        {% for checkbox in field %}
+                        <label class="option-item">
+                            {{ checkbox.tag }}
+                            <span class="option-label">{{ checkbox.choice_label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endwith %}
+        {% endfor %}
+    </section>
+
+    <!-- SECCIÓN 3: Quejas y Sugerencias -->
+    <section class="form-section complaint-section">
+        <h2 class="section-title">
+            <span class="section-number">2</span>
+            ¿Tienes alguna queja o sugerencia?
+        </h2>
+        <p class="section-description">
+            Esta sección es opcional. Si deseas reportar algún problema o hacer una sugerencia, completa la información a continuación.
+        </p>
+
+        <div class="form-group">
+            {{ complaint_form.complaint_reason.errors }}
+            {{ complaint_form.complaint_reason.label_tag }}
+            {{ complaint_form.complaint_reason }}
+        </div>
+
+        <div class="form-group">
+            {{ complaint_form.complaint_text.errors }}
+            {{ complaint_form.complaint_text.label_tag }}
+            {{ complaint_form.complaint_text }}
+            {% if complaint_form.complaint_text.help_text %}
+            <small class="help-text">{{ complaint_form.complaint_text.help_text }}</small>
+            {% endif %}
         </div>
     </section>
 
-            <!-- Sección: Preguntas de la encuesta -->
-            <section class="form-section questions-section">
-                <h2 class="section-title">
-                    <span class="section-number">1</span>
-                    Califica tu Experiencia
-                </h2>
-                
-                {% for question in questions %}
-                <div class="question-block" data-question-id="{{ question.id }}" data-question-type="{{ question.type }}">
-                    <div class="question-header">
-                        <label class="question-text">
-                            {{ forloop.counter }}. {{ question.text }}
-                            {% if question.type == 'rating' or question.type == 'text' %}
-                            <span class="required-indicator">*</span>
-                            {% endif %}
-                        </label>
-                    </div>
-
-                    <div class="question-input">
-                        {% if question.type == 'rating' %}
-                        <!-- Tipo: Calificación (estrellas/escala) -->
-                        <div class="rating-input">
-                            <input type="hidden" name="question_{{ question.id }}" id="rating_{{ question.id }}" required>
-                            <div class="rating-stars" data-question="{{ question.id }}">
-                                <button type="button" class="star" data-value="1" aria-label="1 estrella">
-                                    <svg class="star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                                    </svg>
-                                </button>
-                                <button type="button" class="star" data-value="2" aria-label="2 estrellas">
-                                    <svg class="star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                                    </svg>
-                                </button>
-                                <button type="button" class="star" data-value="3" aria-label="3 estrellas">
-                                    <svg class="star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                                    </svg>
-                                </button>
-                                <button type="button" class="star" data-value="4" aria-label="4 estrellas">
-                                    <svg class="star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                                    </svg>
-                                </button>
-                                <button type="button" class="star" data-value="5" aria-label="5 estrellas">
-                                    <svg class="star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <span class="rating-label" id="ratingLabel_{{ question.id }}">Selecciona tu calificación</span>
-                        </div>
-
-                        {% elif question.type == 'text' %}
-                        <!-- Tipo: Texto libre -->
-                        <textarea 
-                            name="question_{{ question.id }}" 
-                            id="text_{{ question.id }}" 
-                            class="form-control textarea-input" 
-                            rows="3" 
-                            placeholder="Escribe tu respuesta aquí..."
-                            required
-                        ></textarea>
-
-                        {% elif question.type == 'choice' %}
-                        <!-- Tipo: Opción única (radio) -->
-                        <div class="options-list radio-options">
-                            {% for option in question.options.all %}
-                            <label class="option-item">
-                                <input 
-                                    type="radio" 
-                                    name="question_{{ question.id }}" 
-                                    value="{{ option.id }}"
-                                    id="option_{{ option.id }}"
-                                >
-                                <span class="option-label">{{ option.text }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-
-                        {% elif question.type == 'multi_choice' %}
-                        <!-- Tipo: Múltiples opciones (checkbox) -->
-                        <div class="options-list checkbox-options">
-                            {% for option in question.options.all %}
-                            <label class="option-item">
-                                <input 
-                                    type="checkbox" 
-                                    name="question_{{ question.id }}" 
-                                    value="{{ option.id }}"
-                                    id="option_{{ option.id }}"
-                                >
-                                <span class="option-label">{{ option.text }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </section>
-
-            <!-- Sección: Quejas (opcional) -->
-            <section class="form-section complaint-section">
-                <h2 class="section-title">
-                    <span class="section-number">2</span>
-                    ¿Tienes alguna queja o sugerencia?
-                </h2>
-                <p class="section-description">
-                    Esta sección es opcional. Si deseas reportar algún problema o hacer una sugerencia, completa la información a continuación.
-                </p>
-
-                <div class="form-group">
-                    <label for="complaint_reason">Motivo de la queja</label>
-                    <select name="complaint_reason" id="complaint_reason" class="form-control">
-                        <option value="">-- Selecciona un motivo (opcional) --</option>
-                        {% for reason in complaint_reasons %}
-                        <option value="{{ reason.id }}">{{ reason.label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="complaint_text">Describe tu queja o sugerencia</label>
-                    <textarea 
-                        name="complaint_text" 
-                        id="complaint_text" 
-                        class="form-control textarea-input complaint-textarea" 
-                        rows="5" 
-                        placeholder="Describe detalladamente tu queja o sugerencia..."
-                    ></textarea>
-                    <small class="help-text">
-                        Tu queja será revisada y procesada para mejorar el servicio. Máximo 1000 caracteres.
-                    </small>
-                </div>
-            </section>
-
-            <!-- Botones de acción -->
-            <div class="form-actions">
-                <button type="reset" class="btn btn-secondary">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                        <path d="M3 3v5h5"></path>
-                    </svg>
-                    Limpiar formulario
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                    Enviar encuesta
-                </button>
-            </div>
-        </form>
+    <!-- Botones de acción -->
+    <div class="form-actions">
+        <button type="reset" class="btn btn-secondary">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+            </svg>
+            Limpiar formulario
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            Enviar encuesta
+        </button>
+    </div>
+</form>
 {% endblock %}
 
 {% block extra_js %}
-    <script>
-        // Script para manejar calificación con estrellas
-        document.addEventListener('DOMContentLoaded', function() {
-            const ratingContainers = document.querySelectorAll('.rating-stars');
+<script>
+    // Script para manejar calificación con estrellas
+    document.addEventListener('DOMContentLoaded', function() {
+        const ratingContainers = document.querySelectorAll('.rating-stars');
+        
+        ratingContainers.forEach(container => {
+            const stars = container.querySelectorAll('.star');
+            const questionId = container.dataset.question;
+            const hiddenInput = document.getElementById('rating_' + questionId);
+            const ratingLabel = document.getElementById('ratingLabel_' + questionId);
             
-            ratingContainers.forEach(container => {
-                const stars = container.querySelectorAll('.star');
-                const questionId = container.dataset.question;
-                const hiddenInput = document.getElementById('rating_' + questionId);
-                const ratingLabel = document.getElementById('ratingLabel_' + questionId);
-                
-                stars.forEach((star, index) => {
-                    star.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const value = parseInt(this.dataset.value);
-                        hiddenInput.value = value;
-                        
-                        // Actualizar visualización de estrellas
-                        stars.forEach((s, i) => {
-                            if (i < value) {
-                                s.classList.add('active');
-                            } else {
-                                s.classList.remove('active');
-                            }
-                        });
-                        
-                        // Actualizar etiqueta
-                        const labels = ['', 'Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'];
-                        ratingLabel.textContent = labels[value];
+            stars.forEach((star, index) => {
+                star.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const value = parseInt(this.dataset.value);
+                    hiddenInput.value = value;
+                    
+                    // Actualizar visualización de estrellas
+                    stars.forEach((s, i) => {
+                        if (i < value) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
                     });
                     
-                    // Efecto hover
-                    star.addEventListener('mouseenter', function() {
-                        const value = parseInt(this.dataset.value);
-                        stars.forEach((s, i) => {
-                            if (i < value) {
-                                s.classList.add('hover');
-                            } else {
-                                s.classList.remove('hover');
-                            }
-                        });
-                    });
+                    // Actualizar etiqueta
+                    const labels = ['', 'Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'];
+                    ratingLabel.textContent = labels[value];
                 });
                 
-                container.addEventListener('mouseleave', function() {
-                    stars.forEach(s => s.classList.remove('hover'));
+                // Efecto hover
+                star.addEventListener('mouseenter', function() {
+                    const value = parseInt(this.dataset.value);
+                    stars.forEach((s, i) => {
+                        if (i < value) {
+                            s.classList.add('hover');
+                        } else {
+                            s.classList.remove('hover');
+                        }
+                    });
                 });
             });
             
-            // Validación del formulario
-            const form = document.getElementById('surveyForm');
-            form.addEventListener('submit', function(e) {
-                // Validar que todas las preguntas requeridas estén respondidas
-                const ratingInputs = document.querySelectorAll('input[name^="question_"][type="hidden"]');
-                let allRated = true;
-                ratingInputs.forEach(input => {
-                    if (!input.value) {
-                        allRated = false;
-                    }
-                });
-                
-                if (!allRated) {
-                    e.preventDefault();
-                    alert('Por favor califica todas las preguntas con estrellas');
-                    return;
+            container.addEventListener('mouseleave', function() {
+                stars.forEach(s => s.classList.remove('hover'));
+            });
+        });
+        
+        // Validación del formulario
+        const form = document.getElementById('surveyForm');
+        form.addEventListener('submit', function(e) {
+            // Validar que todas las preguntas requeridas estén respondidas
+            const ratingInputs = document.querySelectorAll('input[name^="question_"][type="hidden"]');
+            let allRated = true;
+            ratingInputs.forEach(input => {
+                if (!input.value) {
+                    allRated = false;
                 }
             });
             
-            // Contador de caracteres para queja
-            const complaintTextarea = document.getElementById('complaint_text');
-            if (complaintTextarea) {
-                complaintTextarea.setAttribute('maxlength', '1000');
+            if (!allRated) {
+                e.preventDefault();
+                alert('Por favor califica todas las preguntas con estrellas');
+                return;
             }
         });
-    </script>
+    });
+</script>
 {% endblock %}

@@ -9,16 +9,20 @@ from interview.models.survey_submission import SurveySubmission
 from interview.models.question import Question
 from interview.models.answer import Answer
 from interview.models.question_option import QuestionOption
-from organization.models import Route, Unit
+from transport.models import Route, Unit
 import pytz
 
 
-def calculate_statistics(period: str, organization: str, route_id: str = None, unit_id: str = None) -> dict:
+def calculate_statistics(period: str, route_id: str = None, unit_id: str = None) -> dict:
+    """
+    Calcula estadísticas filtradas por período, ruta o unidad.
+    El aislamiento por organización es automático via schema del tenant.
+    """
     start_date, period_label = get_start_date(period)
 
-    # Base queryset filters
-    submissions_filters = {'organization': organization}
-    complaints_filters = {'organization': organization}
+    # Base queryset filters (sin organization, el schema ya filtra)
+    submissions_filters = {}
+    complaints_filters = {}
     
     # Agregar filtro de fecha si existe
     if start_date:
@@ -40,7 +44,7 @@ def calculate_statistics(period: str, organization: str, route_id: str = None, u
     total_complaints = Complaint.objects.filter(**complaints_filters).count()
     
     # ==================== KPI 3: Resumen de Preguntas ====================
-    questions_statistics = questions_summary(organization, start_date, route_id, unit_id)
+    questions_statistics = questions_summary(start_date, route_id, unit_id)
 
     return {
         "period_label": period_label,
@@ -85,9 +89,10 @@ def get_start_date(period: str) -> tuple[datetime, str]:
     return start_date, period_label
 
 
-def questions_summary(organization: str, start_date: datetime, route_id: str = None, unit_id: str = None) -> dict:
+def questions_summary(start_date: datetime, route_id: str = None, unit_id: str = None) -> dict:
     """
     Recolecta estadísticas de preguntas activas según su tipo.
+    El aislamiento por organización es automático via schema del tenant.
 
     Returns:
         dict: {
@@ -98,14 +103,14 @@ def questions_summary(organization: str, start_date: datetime, route_id: str = N
         }
     """
 
-    # Obtener todas las preguntas activas de la organización
-    questions = Question.objects.filter(Organization=organization, active=True)
+    # Obtener todas las preguntas activas (el schema ya filtra por tenant)
+    questions = Question.objects.filter(active=True)
 
     statistics = {}
 
     for question in questions:
-        # Filtrar respuestas por organización
-        answers_qs = Answer.objects.filter(question=question, organization=organization)
+        # Filtrar respuestas por pregunta (sin organization, el schema filtra)
+        answers_qs = Answer.objects.filter(question=question)
         
         # Filtrar por fecha si existe
         if start_date:
@@ -168,12 +173,10 @@ def questions_summary(organization: str, start_date: datetime, route_id: str = N
     return statistics
 
 
-def get_units_and_routes(organization) -> dict:
+def get_units_and_routes() -> dict:
     """
-    Obtiene las rutas y unidades de una organización.
-    
-    Args:
-        organization: Instancia de Organization
+    Obtiene las rutas y unidades del tenant actual.
+    El aislamiento por organización es automático via schema del tenant.
         
     Returns:
         dict: {
@@ -181,11 +184,11 @@ def get_units_and_routes(organization) -> dict:
             "units": [{"id": uuid, "number": str}, ...]
         }
     """
-    # Obtener rutas de la organización
-    routes = Route.objects.filter(organization=organization).order_by('name').values('id', 'name')
+    # Obtener rutas (el schema ya filtra por tenant)
+    routes = Route.objects.order_by('name').values('id', 'name')
     
-    # Obtener unidades de la organización
-    units = Unit.objects.filter(organization=organization).order_by('unit_number').values('id', 'unit_number')
+    # Obtener unidades (el schema ya filtra por tenant)
+    units = Unit.objects.order_by('unit_number').values('id', 'unit_number')
     
     return {
         "routes": list(routes),

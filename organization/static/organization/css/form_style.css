@@ -1,7 +1,11 @@
 /* ========================================
    Variables y Reset General
    ======================================== */
-:root {
+/* Base layout variables and reset moved to tenant_manager/static/tenant_manager/css/base.css */
+/* ========================================
+   Variables y Reset General
+   ======================================== */
+/* :root {
     --primary-color: #2563eb;
     --primary-hover: #1e40af;
     --secondary-color: #64748b;
@@ -32,7 +36,7 @@
     --spacing-lg: 1.5rem;
     --spacing-xl: 2rem;
     --spacing-2xl: 3rem;
-}
+} */
 
 * {
     margin: 0;
@@ -404,13 +408,14 @@ textarea.form-control {
 /* ========================================
    Footer del Formulario
    ======================================== */
-.form-footer {
+/* Footer and admin link styles moved to tenant_manager/static/tenant_manager/css/base.css */
+/* .form-footer {
     background: var(--bg-light);
     padding: var(--spacing-lg);
     text-align: center;
     color: var(--text-secondary);
     font-size: 0.9rem;
-}
+} */
 
 .form-footer p {
     margin: 0.25rem 0;
@@ -465,6 +470,20 @@ textarea.form-control {
     
     .form-header h1 {
         font-size: 1.5rem;
+/* Responsive rules for form header moved to tenant_manager/static/tenant_manager/css/base.css */
+/* @media (max-width: 768px) {
+    body {
+        padding: var(--spacing-sm);
+    }
+    
+    .form-header {
+        padding: var(--spacing-xl) var(--spacing-md);
+    }
+    
+    .form-header h1 {
+        font-size: 1.5rem;
+    }
+} */
     }
     
     .survey-form {

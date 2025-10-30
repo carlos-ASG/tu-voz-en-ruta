@@ -9,15 +9,6 @@ class ComplaintReason(models.Model):
     created_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de creación')
     updated_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de actualización')
 
-    organization = models.ForeignKey(
-        'organization.Organization',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='complaint_reasons',
-        verbose_name='Organización'
-    )
-
     def __str__(self):
         return self.label
 

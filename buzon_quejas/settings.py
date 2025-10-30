@@ -34,24 +34,84 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'tu-voz-en-ruta.onrender.com']
+# Configuración de ALLOWED_HOSTS para django-tenants
+# Permite el dominio principal y todos sus subdominios
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.localhost',  # Permite *.localhost para desarrollo (alianza.localhost, etc)
+    'tuvozenruta.com',
+    '.tuvozenruta.com',  # Permite *.tuvozenruta.com (alianza.tuvozenruta.com, etc)
+    'tu-voz-en-ruta.onrender.com',
+    '.tu-voz-en-ruta.onrender.com',  # Permite subdominios en Render
+]
 
 # Application definition
 
-INSTALLED_APPS = [
-    "jazzmin",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "interview.apps.InterviewConfig",
-    "organization.apps.OrganizationConfig",
-    "statistical_summary.apps.StatisticalSummaryConfig",
+# 2. Define qué apps son COMPARTIDAS (esquema 'public')
+# OTRA FORMA MÁS EXPLÍCITA DE ORDENAR:
+
+# 1. Apps de tenant (incluir transport SOLO aquí)
+TENANT_APPS = [
+    'jazzmin',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.staticfiles',
+    'django.contrib.messages',
+    'interview.apps.InterviewConfig',
+    'statistical_summary.apps.StatisticalSummaryConfig',
+    'transport.apps.TransportConfig',  # ← DEBE estar aquí
 ]
 
+# 2. Apps compartidas (transport NO va aquí)
+SHARED_APPS = [
+    'django_tenants',
+    'organization.apps.OrganizationConfig',
+    # transport NO va aquí
+    'jazzmin',
+    
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.staticfiles',
+    'django.contrib.messages',
+]
+
+
+# 4. Construye INSTALLED_APPS de forma segura
+# (Usando set para unir y luego re-ordenando)
+
+# Esta es la forma más simple y robusta, aunque repitas un poco:
+INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
+""" INSTALLED_APPS = [
+    'django_tenants',
+    'jazzmin',
+    
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    'tenant_manager.apps.TenantManagerConfig',
+    'organization.apps.OrganizationConfig',
+    'interview.apps.InterviewConfig',
+    'statistical_summary.apps.StatisticalSummaryConfig',
+] """
+
+
+# 4. Define tu modelo Tenant
+TENANT_MODEL = "organization.Organization"  # Cambiar de tenant_manager a organization
+TENANT_DOMAIN_MODEL = "organization.Domain"
+
+
+
 MIDDLEWARE = [
+    "django_tenants.middleware.main.TenantMainMiddleware",  # DEBE IR PRIMERO
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -61,8 +121,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
-ROOT_URLCONF = "buzon_quejas.urls"
 
 TEMPLATES = [
     {
@@ -92,13 +150,24 @@ os.environ.setdefault(
 )
 
 
+# 1. Obtén la configuración de la URL de la base de datos como de costumbre
+db_config = dj_database_url.config(
+    default=os.environ.get("DATABASE_URL"),
+    conn_max_age=600
+)
+
+# 2. ¡Importante! Sobrescribe el motor (ENGINE) por el de django-tenants
+db_config['ENGINE'] = 'django_tenants.postgresql_backend'
+
+# 3. Asigna la configuración modificada a DATABASES
 DATABASES = {
-    "default": dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default=os.environ.get("DATABASE_URL"),
-        conn_max_age=600,
-    )
+    'default': db_config
 }
+
+# 6. Añade los Database Routers
+DATABASE_ROUTERS = (
+    'django_tenants.routers.TenantSyncRouter',
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -118,7 +187,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = "organization.User"
+#AUTH_USER_MODEL = "organization.User"
 
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
@@ -307,3 +376,6 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+PUBLIC_SCHEMA_URLCONF = 'buzon_quejas.urls_public'  # URLs para el esquema público
+ROOT_URLCONF = "buzon_quejas.urls_tenant"

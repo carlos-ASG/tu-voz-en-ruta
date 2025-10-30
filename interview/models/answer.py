@@ -34,14 +34,6 @@ class Answer(models.Model):
     
     created_at = models.DateTimeField(default=timezone.now, verbose_name='Fecha de creación')
     
-    organization = models.ForeignKey(
-        'organization.Organization',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='answers',
-        verbose_name='Organización'
-    )
 
     def __str__(self):
         return f'Answer {self.id} for Question {self.question.id}'

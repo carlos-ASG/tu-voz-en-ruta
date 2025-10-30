@@ -11,14 +11,6 @@ class QuestionOption(models.Model):
     position = models.IntegerField(verbose_name='Posición de la opción')
     created_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de creación')
     updated_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de actualización')
-    organization = models.ForeignKey(
-        'organization.Organization',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='question_options',
-        verbose_name='Organización'
-    )
 
     def __str__(self):
         return self.text

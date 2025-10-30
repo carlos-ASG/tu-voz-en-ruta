@@ -6,7 +6,7 @@
 {% block header_subtitle %}Por favor selecciona la unidad en la que viajaste{% endblock %}
 
 {% block content %}
-<form method="post" action="{% url 'interview:select_unit' %}" class="survey-form" id="selectUnitForm">
+<form method="post" action="{% url 'organization:select_organization' %}" class="survey-form" id="selectUnitForm">
     {% csrf_token %}
     
     <!-- Sección: Selección de unidad -->
@@ -23,16 +23,16 @@
         {% endif %}
         
         <div class="form-group">
-            {{ form.unit.label_tag }}
-            {{ form.unit }}
-            {% if form.unit.help_text %}
-            <small class="help-text">{{ form.unit.help_text }}</small>
+            {{ form.organization.label_tag }}
+            {{ form.organization }}
+            {% if form.organization.help_text %}
+            <small class="help-text">{{ form.organization.help_text }}</small>
             {% else %}
-            <small class="help-text">Selecciona el número de la unidad en la que viajaste</small>
+            <small class="help-text">Selecciona la organización</small>
             {% endif %}
-            {% if form.unit.errors %}
+            {% if form.organization.errors %}
             <div class="field-errors">
-                {{ form.unit.errors }}
+                {{ form.organization.errors }}
             </div>
             {% endif %}
         </div>
@@ -54,13 +54,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('selectUnitForm');
-        const unitSelect = document.getElementById('unit_number');
+        const unitSelect = document.getElementById('organization_id');
         
         // Validación básica del lado del cliente
         form.addEventListener('submit', function(e) {
             if (!unitSelect.value) {
                 e.preventDefault();
-                alert('Por favor selecciona un número de unidad');
+                alert('Por favor selecciona una organización');
                 unitSelect.focus();
                 return false;
             }

@@ -15,14 +15,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     2. Período de fechas (hoy, semana, mes, año, todo)
     """
     
-    # FILTRO CRÍTICO: Obtener organización del usuario
+    # FILTRO CRÍTICO: Obtener organización desde el tenant actual
     def get_context_data(self, **kwargs):
-        user_organization = self.request.user.organization
+        # Obtener organización desde el tenant (django-tenants middleware)
+        user_organization = self.request.tenant
         
         if not user_organization:
-            # Si el usuario no tiene organización asignada, mostrar página vacía
+            # Si no hay tenant, mostrar página de error
             context = {
-                'error_message': 'Tu usuario no tiene una organización asignada. Contacta al administrador.',
+                'error_message': 'No se pudo determinar la organización. Verifica que estés accediendo desde el dominio correcto.',
                 'has_data': False,
             }
             return context
@@ -38,16 +39,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         if route_id and unit_id:
             unit_id = None
 
-        # Calcular estadísticas con filtros
+        # Calcular estadísticas con filtros (sin organization, el schema filtra)
         statistics = calculate_statistics(
-            period=period, 
-            organization=user_organization,
+            period=period,
             route_id=route_id,
             unit_id=unit_id
         )
         
-        # Obtener rutas y unidades para los selectores
-        filters_data = get_units_and_routes(user_organization)
+        # Obtener rutas y unidades para los selectores (sin organization, el schema filtra)
+        filters_data = get_units_and_routes()
         
         context = {
             'has_data': bool(statistics),

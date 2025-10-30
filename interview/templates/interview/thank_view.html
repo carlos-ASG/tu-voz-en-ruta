@@ -53,20 +53,23 @@
 
         <!-- Acciones -->
         <div class="form-actions success-actions">
-            <a href="{% url 'interview:select_unit' %}" class="btn btn-primary">
+            <!-- Corregir URL: usar 'interview:survey_form' en lugar de 'interview:select_unit' -->
+            <a href="{% url 'interview:survey_form' %}" class="btn btn-primary">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
                 Evaluar otra unidad
             </a>
             
-{% comment %}             <a href="{% url 'admin:index' %}" class="btn btn-secondary">
+            {% comment %}
+            <a href="{% url 'admin:index' %}" class="btn btn-secondary">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
                 Ir al inicio
-            </a> {% endcomment %}
+            </a>
+            {% endcomment %}
         </div>
     </div>
 </section>
@@ -80,7 +83,7 @@
         
         // Opcional: redirección automática después de cierto tiempo
         // setTimeout(function() {
-        //     window.location.href = "{% url 'interview:select_unit' %}";
+        //     window.location.href = "{% url 'interview:survey_form' %}";
         // }, 10000); // 10 segundos
     });
 </script>

@@ -2,188 +2,170 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from organization.models import Unit, Organization
+from transport.models import Unit
 from .models import Question, ComplaintReason, SurveySubmission, Answer, Complaint
-from .forms.survery_form import SurveyForm
+from .forms.complaint_form import ComplaintForm
 from .forms.select_unit_form import SelectUnitForm
-
-def select_unit(request):
-    """
-    Vista para seleccionar la unidad antes de mostrar el formulario de encuesta.
-    Muestra todas las unidades de todas las organizaciones.
-    Al enviar, redirige automáticamente al formulario de la organización y unidad seleccionada.
-    """
-    if request.method == 'POST':
-        form = SelectUnitForm(request.POST)
-        if form.is_valid():
-            unit = form.get_selected_unit()
-            # Redirigir al formulario de encuesta con la organización y unidad seleccionadas
-            return redirect('interview:survey_form', 
-                          organization_id=unit.organization.id, 
-                          unit_id=unit.id)
-        else:
-            # Si el formulario no es válido, volver a mostrar con errores
-            context = {'form': form}
-            return render(request, 'interview/select_unit.html', context)
-    else:
-        # GET: mostrar formulario vacío
-        form = SelectUnitForm()
-        context = {'form': form}
-        return render(request, 'interview/select_unit.html', context)
+from .forms.survery_form import SurveyForm
 
 
-def survey_form(request, organization_id, unit_id):
+def index(request):
+    return HttpResponse(f"<h1>{request.tenant}</h1>")
+
+
+def survey_form(request):
     """
     Vista para mostrar el formulario de encuesta con preguntas dinámicas.
+    Maneja tres formularios separados: selección de unidad, preguntas de encuesta y quejas.
     """
-    organization = get_object_or_404(Organization, id=organization_id)
-    unit = get_object_or_404(Unit, id=unit_id, organization_id=organization_id)
+    unit_id = request.GET.get('unit_id', None)
     
-    # Crear el formulario con las preguntas de la organización
-    form = SurveyForm(organization_id=organization_id)
-    
-    # Obtener preguntas para renderizar (con sus opciones)
-    questions = Question.objects.filter(
-        active=True,
-        Organization_id=organization_id
-    ).prefetch_related('options').order_by('position')
+    # Inicializar los tres formularios
+    unit_form = SelectUnitForm(unit_id=unit_id, data=request.POST or None)
+    survey_form_obj = SurveyForm(data=request.POST or None)
+    complaint_form = ComplaintForm(data=request.POST or None)
     
     context = {
-        'organization': organization,
-        'organization_id': organization_id,
-        'unit': unit,
         'unit_id': unit_id,
-        'form': form,
-        'questions': questions,
-        'complaint_reasons': ComplaintReason.objects.filter(
-            organization_id=organization_id
-        ).order_by('label'),
+        'unit_form': unit_form,
+        'survey_form': survey_form_obj,
+        'complaint_form': complaint_form,
     }
+    
     return render(request, 'interview/form_section.html', context)
 
 
-def submit_survey(request, organization_id, unit_id):
+def submit_survey(request):
     """
     Vista para procesar el envío de la encuesta.
+    Valida y procesa los tres formularios: unidad, encuesta y quejas.
+    El aislamiento por organización es automático gracias al schema del tenant (django-tenants).
     """
     if request.method != 'POST':
-        return redirect('interview:survey_form', organization_id=organization_id, unit_id=unit_id)
+        return redirect('interview:survey_form')
     
-    organization = get_object_or_404(Organization, id=organization_id)
-    unit = get_object_or_404(Unit, id=unit_id, organization_id=organization_id)
+    # Obtener unit_id desde POST o GET
+    unit_id = request.POST.get('unit') or request.GET.get('unit_id')
     
-    # Crear el formulario con los datos POST
-    form = SurveyForm(organization_id=organization_id, data=request.POST)
+    if not unit_id:
+        messages.error(request, 'Debes seleccionar una unidad para continuar.')
+        return redirect('interview:survey_form')
     
-    if form.is_valid():
-        try:
-            # 1. Crear el registro de envío de encuesta con organización
-            submission = SurveySubmission.objects.create(
-                unit=unit,
-                organization=organization
-            )
-            
-            # 2. Procesar las respuestas a las preguntas
-            questions = Question.objects.filter(
-                active=True,
-                Organization_id=organization_id
-            )
-            
-            for question in questions:
-                field_name = f'question_{question.id}'
-                
-                if field_name not in form.cleaned_data:
-                    continue
-                
-                field_value = form.cleaned_data[field_name]
-                
-                if question.type == Question.QuestionType.RATING:
-                    # Rating: valor entero del 1 al 5
-                    if field_value:
-                        Answer.objects.create(
-                            submission=submission,
-                            question=question,
-                            rating_answer=field_value,
-                            organization=organization
-                        )
-                
-                elif question.type == Question.QuestionType.TEXT:
-                    # Texto libre
-                    if field_value and field_value.strip():
-                        Answer.objects.create(
-                            submission=submission,
-                            question=question,
-                            text_answer=field_value.strip(),
-                            organization=organization
-                        )
-                
-                elif question.type == Question.QuestionType.CHOICE:
-                    # Opción única (ModelChoiceField devuelve un QuestionOption)
-                    # Usar el nuevo campo selected_option (ForeignKey) en lugar de M2M
-                    if field_value:
-                        Answer.objects.create(
-                            submission=submission,
-                            question=question,
-                            selected_option=field_value,  # Ahora es FK directo
-                            organization=organization
-                        )
-                
-                elif question.type == Question.QuestionType.MULTI_CHOICE:
-                    # Múltiples opciones (ModelMultipleChoiceField devuelve QuerySet)
-                    if field_value:
-                        answer = Answer.objects.create(
-                            submission=submission,
-                            question=question,
-                            organization=organization
-                        )
-                        answer.selected_options.set(field_value)
-            
-            # 3. Procesar la queja (si existe)
-            complaint_reason = form.cleaned_data.get('complaint_reason')
-            complaint_text = form.cleaned_data.get('complaint_text', '').strip() if form.cleaned_data.get('complaint_text') else ''
-            
-            # Crear queja si hay un motivo seleccionado (el texto es opcional)
-            if complaint_reason:
-                Complaint.objects.create(
-                    unit=unit,
-                    reason=complaint_reason,
-                    text=complaint_text,  # Puede ser vacío
-                    organization=organization
-                )
-            
-            messages.success(request, '¡Gracias! Tu encuesta ha sido enviada correctamente.')
-            
-            # Guardar información en la sesión para la vista de agradecimiento
-            request.session['has_complaint'] = bool(complaint_reason)
-            request.session['submission_success'] = True
-            
-            # Redirigir a la vista de agradecimiento
-            return redirect('interview:thank_you')
-            
-        except Exception as e:
-            messages.error(request, f'Ocurrió un error al procesar la encuesta: {str(e)}')
-            print(f'Error en submit_survey: {e}')
-            return redirect('interview:survey_form', organization_id=organization_id, unit_id=unit_id)
-    else:
-        # Si el formulario no es válido, mostrar errores
+    # Validar que la unidad pertenece a la organización actual
+    unit = get_object_or_404(Unit, id=unit_id)
+    
+    # Inicializar los tres formularios con los datos POST
+    unit_form = SelectUnitForm(unit_id=unit_id, data=request.POST)
+    survey_form = SurveyForm(data=request.POST)
+    complaint_form = ComplaintForm(data=request.POST)
+    
+    # Validar todos los formularios
+    unit_valid = unit_form.is_valid()
+    survey_valid = survey_form.is_valid()
+    complaint_valid = complaint_form.is_valid()
+    
+    if not (unit_valid and survey_valid and complaint_valid):
+        # Si algún formulario no es válido, mostrar errores
         messages.error(request, 'Por favor corrige los errores en el formulario.')
         
-        # Renderizar el formulario con errores
-        questions = Question.objects.filter(
-            active=True,
-            Organization_id=organization_id
-        ).prefetch_related('options').order_by('position')
+        context = {
+            'unit_id': unit_id,
+            'unit_form': unit_form,
+            'survey_form': survey_form,
+            'complaint_form': complaint_form,
+        }
+        return render(request, 'interview/form_section.html', context)
+    
+    # ============================================
+    # TODOS LOS FORMULARIOS SON VÁLIDOS
+    # ============================================
+    
+    try:
+        # 1. Crear el registro de envío de encuesta
+        submission = SurveySubmission.objects.create(
+            unit=unit
+        )
+        
+        # 2. Procesar las respuestas a las preguntas del SurveyForm
+        for field_name, field_obj in survey_form.fields.items():
+            if not field_name.startswith('question_'):
+                continue
+            
+            # Obtener el objeto Question asociado
+            question = getattr(field_obj, 'question_obj', None)
+            if not question:
+                continue
+            
+            field_value = survey_form.cleaned_data.get(field_name)
+            
+            if question.type == Question.QuestionType.RATING:
+                # Rating: valor entero del 1 al 5
+                if field_value:
+                    Answer.objects.create(
+                        submission=submission,
+                        question=question,
+                        rating_answer=field_value
+                    )
+            
+            elif question.type == Question.QuestionType.TEXT:
+                # Texto libre
+                if field_value and field_value.strip():
+                    Answer.objects.create(
+                        submission=submission,
+                        question=question,
+                        text_answer=field_value.strip()
+                    )
+            
+            elif question.type == Question.QuestionType.CHOICE:
+                # Opción única (ModelChoiceField devuelve un QuestionOption)
+                if field_value:
+                    Answer.objects.create(
+                        submission=submission,
+                        question=question,
+                        selected_option=field_value
+                    )
+            
+            elif question.type == Question.QuestionType.MULTI_CHOICE:
+                # Múltiples opciones (ModelMultipleChoiceField devuelve QuerySet)
+                if field_value:
+                    answer = Answer.objects.create(
+                        submission=submission,
+                        question=question
+                    )
+                    answer.selected_options.set(field_value)
+        
+        # 3. Procesar la queja del ComplaintForm (si existe)
+        complaint_reason = complaint_form.cleaned_data.get('complaint_reason')
+        complaint_text = complaint_form.cleaned_data.get('complaint_text', '').strip()
+        
+        # Crear queja si hay un motivo seleccionado (el texto es opcional)
+        has_complaint = False
+        if complaint_reason:
+            Complaint.objects.create(
+                unit=unit,
+                reason=complaint_reason,
+                text=complaint_text  # Puede ser vacío
+            )
+            has_complaint = True
+        
+        messages.success(request, '¡Gracias! Tu encuesta ha sido enviada correctamente.')
+        
+        # Guardar información en la sesión para la vista de agradecimiento
+        request.session['has_complaint'] = has_complaint
+        request.session['submission_success'] = True
+        
+        # Redirigir a la vista de agradecimiento
+        return redirect('interview:thank_you')
+        
+    except Exception as e:
+        messages.error(request, f'Ocurrió un error al procesar la encuesta: {str(e)}')
+        print(f'Error en submit_survey: {e}')
         
         context = {
-            'organization': organization,
-            'organization_id': organization_id,
-            'unit': unit,
             'unit_id': unit_id,
-            'form': form,
-            'questions': questions,
-            'complaint_reasons': ComplaintReason.objects.filter(
-                organization_id=organization_id
-            ).order_by('label'),
+            'unit_form': unit_form,
+            'survey_form': survey_form,
+            'complaint_form': complaint_form,
         }
         return render(request, 'interview/form_section.html', context)
 
@@ -205,7 +187,7 @@ def thank_you(request):
     now = timezone.now().astimezone(tz)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Contar envíos de hoy (en la zona horaria local)
+    # Contar envíos de hoy (el aislamiento por tenant es automático vía schema)
     total_submissions = SurveySubmission.objects.filter(
         submitted_at__gte=today_start
     ).count()
@@ -213,7 +195,7 @@ def thank_you(request):
     # Preparar contexto ANTES de limpiar sesión
     context = {
         'has_complaint': has_complaint,
-        'show_stats': submission_success,  # Solo mostrar stats si viene de un envío real
+        'show_stats': submission_success,
         'total_submissions': total_submissions,
     }
     

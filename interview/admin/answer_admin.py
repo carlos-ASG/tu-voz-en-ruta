@@ -1,9 +1,8 @@
 from django.contrib import admin
 from ..models import Answer
 from .read_only_admin_mixin import ReadOnlyAdminMixin
+from transport.admin import tenant_admin_site
 
-
-@admin.register(Answer)
 class AnswerAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = ('question', 'get_question_type', 'get_answer_display', 'created_at')
     list_filter = ('created_at', 'question', 'question__type')
@@ -38,23 +37,5 @@ class AnswerAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         # asegurar que no haya duplicados
         return tuple(dict.fromkeys(list(base) + m2m_fields))
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
 
-        if request.user.is_superuser:
-            return qs
-
-        if hasattr(request.user, 'organization') and request.user.organization:
-            return qs.filter(organization=request.user.organization)
-
-        return qs.none()
-
-    def has_module_permission(self, request):
-        return request.user.is_superuser or request.user.is_staff
-
-    def get_fields(self, request, obj=None):
-        fields = super().get_fields(request, obj)
-        fields = list(fields)
-        if not request.user.is_superuser and 'organization' in fields:
-            fields.remove('organization')
-        return tuple(fields)
+tenant_admin_site.register(Answer, AnswerAdmin)

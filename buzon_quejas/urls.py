@@ -16,13 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import RedirectView
 
 urlpatterns = [
+    # # Redirect root URL to the interview app
+    # #path('', RedirectView.as_view(url='/interview/', permanent=False)),
     path('admin/', admin.site.urls),
-    # Redirect root URL to the interview app
-    path('', RedirectView.as_view(url='/interview/', permanent=False)),
     path('interview/', include('interview.urls')),
-    # Statistical summary dashboard
-    path('statistical-summary/', include('statistical_summary.urls')),
-]
+    # # Statistical summary dashboard
+    # path('statistical-summary/', include('statistical_summary.urls')),
+    #path('admin/', admin.site.urls),
+    #path('', index),
+    
+] 

@@ -5,16 +5,8 @@ from django.utils import timezone
 
 class SurveySubmission(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    unit = models.ForeignKey('organization.Unit', on_delete=models.CASCADE, related_name='submissions', verbose_name='Unidad')
+    unit = models.ForeignKey('transport.Unit', on_delete=models.CASCADE, related_name='submissions', verbose_name='Unidad')
     submitted_at = models.DateTimeField(default=timezone.now)
-    organization = models.ForeignKey(
-        'organization.Organization',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='survey_submissions',
-        verbose_name='Organización'
-    )
 
     def __str__(self):
         return f'Submission {self.id} for Unit {self.unit.unit_number}'
