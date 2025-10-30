@@ -38,16 +38,12 @@ class SelectUnitForm(forms.Form):
             # Queryset que contiene solo esa unidad (no trae todas primero)
             self.fields['unit'].queryset = Unit.objects.filter(pk=unit.pk).select_related('route')
 
-            # Establecer el valor inicial y deshabilitar el campo para evitar cambios
-            # Django preserva el valor inicial en cleaned_data para campos disabled.
+            # Establecer el valor inicial
             self.initial['unit'] = unit.pk
-            self.fields['unit'].disabled = True
-            # Asegurar atributos HTML para que se vea consistente
-            self.fields['unit'].widget.attrs.update({
-                'class': 'form-control',
-                'id': 'unit_number',
-                'disabled': 'disabled',
-            })
+            
+            # IMPORTANTE: Cambiar el widget a HiddenInput para que el valor SÍ se envíe en POST
+            # (los campos disabled NO se envían; hidden sí)
+            self.fields['unit'].widget = forms.HiddenInput()
         else:
             # Cargar todas las unidades solo cuando no hay unit_id
             self.fields['unit'].queryset = Unit.objects.select_related('route').all().order_by('route__name', 'unit_number')

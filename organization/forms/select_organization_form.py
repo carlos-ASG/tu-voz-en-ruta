@@ -1,3 +1,4 @@
+from os import name
 from django import forms
 
 from organization.models import Organization
@@ -9,7 +10,7 @@ class SelectOrganizationForm(forms.Form):
     """
 
     organization = forms.ModelChoiceField(
-        queryset=Organization.objects.all().order_by('name'),
+        queryset=Organization.objects.exclude(schema_name='public').order_by('name'),
         required=True,
         empty_label="-- Selecciona la organización --",
         label="Organización",

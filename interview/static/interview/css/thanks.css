@@ -6,6 +6,8 @@
 .success-container {
     max-width: 600px;
     margin: 0 auto;
+    /* padding interior para evitar que el contenido quede pegado en móviles */
+    padding: 0 1rem;
 }
 
 .success-icon {
@@ -145,5 +147,18 @@
 
     .success-actions .btn {
         width: 100%;
+    }
+
+    /* Aumentar padding general en móviles para separación de bordes */
+    .success-container {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    .success-message,
+    .complaint-confirmation,
+    .stats-box {
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 }

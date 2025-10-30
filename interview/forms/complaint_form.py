@@ -28,7 +28,11 @@ class ComplaintForm(forms.Form):
             'rows': 5,
             'id': 'complaint_text',
             'placeholder': 'Describe detalladamente tu queja o sugerencia...',
-            'maxlength': '1000'
+            'maxlength': '1000',
+            # Mantener readonly por defecto; el JS en la plantilla habilita el campo
+            'readonly': 'readonly',
+            # data attribute para identificarlo desde JS
+            'data-toggle-by': 'complaint_reason'
         }),
         help_text='Tu queja será revisada y procesada para mejorar el servicio. Máximo 1000 caracteres.'
     )
