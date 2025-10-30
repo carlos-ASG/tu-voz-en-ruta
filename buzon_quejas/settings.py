@@ -53,7 +53,7 @@ ALLOWED_HOSTS = [
 
 # 1. Apps de tenant (incluir transport SOLO aquí)
 TENANT_APPS = [
-    'jazzmin',
+    'jazzmin',  # ← Debe ir primero para sobrescribir templates de admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -66,11 +66,12 @@ TENANT_APPS = [
 ]
 
 # 2. Apps compartidas (transport NO va aquí)
+# IMPORTANTE: Jazzmin debe ir PRIMERO, antes de django_tenants y django.contrib.admin
 SHARED_APPS = [
+    'jazzmin',  # ← PRIMERO para que sus templates/static tengan prioridad
     'django_tenants',
     'organization.apps.OrganizationConfig',
     # transport NO va aquí
-    'jazzmin',
     
     'django.contrib.admin',
     'django.contrib.auth',
@@ -223,13 +224,12 @@ JAZZMIN_SETTINGS = {
     # Links to put along the top menu
     "topmenu_links": [
         # Url that gets reversed (Permissions can be added)
-        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        #{"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
         # Link directo al dashboard de estadísticas
-        {"name": "Estadísticas", "url": "/statistical-summary/dashboard/", "new_window": False},
         # Link directo al sitio público / aplicación (vista que muestra selección de unidad)
-        {"name": "Ver encuesta", "url": "interview:select_unit", "new_window": True},
+        {"name": "Ver encuesta", "url": "interview:survey_form", "new_window": True},
         # model admin to link to (Permissions checked against model)
-        {"model": "auth.User"},
+        #{"model": "auth.User"},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "books"},
     ],
@@ -239,8 +239,7 @@ JAZZMIN_SETTINGS = {
     # Additional links to include in the user menu on the top right ("app" url type is not allowed)
     "usermenu_links": [
         # Enlaces duplicados para acceso móvil
-        {"name": "Estadísticas", "url": "/statistical-summary/dashboard/", "new_window": False, "icon": "fas fa-chart-pie"},
-        {"name": "Ver encuesta", "url": "interview:select_unit", "new_window": True, "icon": "fas fa-poll"},
+    
         {"model": "auth.user"},
     ],
     #############
@@ -272,6 +271,7 @@ JAZZMIN_SETTINGS = {
     # for the full list of 5.13.0 free icon classes
     "icons": {
         "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
         # Icons for the interview app and its models
         "interview": "fas fa-poll",
@@ -286,9 +286,10 @@ JAZZMIN_SETTINGS = {
         # Organization app icons (added)
         "organization": "fas fa-building",
         "organization.organization": "fas fa-building",
-        "organization.route": "fas fa-route",
-        "organization.unit": "fas fa-bus",
         "organization.user": "fas fa-user",
+        #transport app icons
+        "transport.route": "fas fa-route",
+        "transport.unit": "fas fa-bus",
         # Statistical Summary app icons
         "statistical_summary.statisticalsummary": "fas fa-chart-pie",
     },
