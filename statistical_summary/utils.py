@@ -41,18 +41,103 @@ def calculate_statistics(period: str, route_id: str = None, unit_id: str = None)
     total_submissions = SurveySubmission.objects.filter(**submissions_filters).count()
     
     # ==================== KPI 2: Total de Quejas ====================
-    total_complaints = Complaint.objects.filter(**complaints_filters).count()
-    
+    # ✅ Renombrar la llamada para evitar conflicto de nombres
+    complaints_data = get_complaints_summary(complaints_filters)
+    total_complaints = complaints_data.get('total_complaints', 0)
+    complaints_by_reason = complaints_data.get('by_reason', {})
+
     # ==================== KPI 3: Resumen de Preguntas ====================
     questions_statistics = questions_summary(start_date, route_id, unit_id)
 
+    # ==================== KPI 4: Línea de tiempo de envíos ====================
+    survey_timeline = get_survey_submissions_timeline(submissions_filters)
+    
     return {
         "period_label": period_label,
         "total_submissions": total_submissions,
         "total_complaints": total_complaints,
+        "complaints_by_reason": complaints_by_reason,
         "questions_statistics": questions_statistics,
+        "survey_submissions_timeline": survey_timeline,
     }
 
+def get_survey_submissions_timeline(submissions_filters: dict) -> dict:
+    """Retorna una línea de tiempo de envíos de encuestas.
+
+    Args:
+        submissions_filters: filtros a aplicar sobre SurveySubmission queryset (ej. fecha, unit_id)
+
+    Returns:
+        dict: {
+            'dates': [str, ...],  # Fechas en formato 'YYYY-MM-DD'
+            'counts': [int, ...]  # Conteo de envíos por fecha
+        }
+    """
+    from django.db.models.functions import TruncDate
+    
+    # Obtener envíos agrupados por fecha
+    submissions_by_date = (
+        SurveySubmission.objects.filter(**submissions_filters)
+        .annotate(date=TruncDate('submitted_at'))
+        .values('date')
+        .annotate(count=Count('id'))
+        .order_by('date')
+    )
+    
+    # Separar en listas de fechas y conteos
+    dates = []
+    counts = []
+    
+    for item in submissions_by_date:
+        date_obj = item.get('date')
+        if date_obj:
+            # Convertir a string en formato 'YYYY-MM-DD'
+            dates.append(date_obj.strftime('%Y-%m-%d'))
+            counts.append(item.get('count', 0))
+    
+    return {
+        'dates': dates,
+        'counts': counts,
+    }
+
+
+def get_complaints_summary(complaints_filters: dict) -> dict:
+    """Retorna un resumen de quejas.
+
+    Args:
+        complaints_filters: filtros a aplicar sobre Complaint queryset (ej. fecha, unit_id)
+
+    Returns:
+        dict: {
+            'total_complaints': int,
+            'by_reason': {
+                'motivo': count,
+                ...
+            }
+        }
+    """
+    qs = Complaint.objects.filter(**complaints_filters)
+    total_complaints = qs.count()
+
+    # Agrupar por motivo de la queja y contar
+    reason_counts = (
+        qs.values('reason__label')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+
+    # Convertir a diccionario simple: {motivo: count}
+    by_reason = {}
+    for item in reason_counts:
+        label = item.get('reason__label') or 'Sin motivo'
+        count = item.get('count', 0)
+        by_reason[label] = count
+
+    return {
+        'total_complaints': total_complaints,
+        'by_reason': by_reason,
+    }
+    
 
 def get_start_date(period: str) -> tuple[datetime, str]:
     # Calcular rango de fechas según el período seleccionado

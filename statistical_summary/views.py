@@ -2,6 +2,7 @@ from calendar import c
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+import json
 
 from statistical_summary.utils import calculate_statistics, get_units_and_routes
 
@@ -49,6 +50,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Obtener rutas y unidades para los selectores (sin organization, el schema filtra)
         filters_data = get_units_and_routes()
         
+        # Convertir complaints_by_reason a JSON para el template
+        complaints_by_reason_json = json.dumps(statistics.get('complaints_by_reason', []))
+        survey_submissions_timeline_json = json.dumps(statistics.get('survey_submissions_timeline', {}))
+        
         context = {
             'has_data': bool(statistics),
             'period': period,
@@ -58,6 +63,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'selected_route': route_id,
             'selected_unit': unit_id,
             **statistics,
+            'complaints_by_reason_json': complaints_by_reason_json,
+            'survey_submissions_timeline_json': survey_submissions_timeline_json,
         }
         
         return context
