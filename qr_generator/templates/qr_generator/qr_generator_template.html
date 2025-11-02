@@ -1,42 +1,19 @@
+{% extends 'organization/base_admin_views.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="{% static 'qr_generator/css/style.css' %}">
-</head>
-<body>
-<!-- NAVBAR SUPERIOR: enlace rápido al panel de administración -->
-<nav class="top-navbar" role="navigation" aria-label="Admin navigation">
-  <div class="top-navbar-inner">
-    <a href="{% url 'admin:index' %}" class="top-nav-link" title="Volver al panel de administración">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      Panel de Administrador
-    </a>
-  </div>
-</nav>
 
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'qr_generator/css/style.css' %}">
+{% endblock %}
+
+{% block content %}
 <div class="qr-generator-container">
     <!-- Header Section -->
     <div class="qr-header">
         <h1>Generador de Códigos QR</h1>
         <p class="qr-subtitle">Genera códigos QR para las encuestas de tus unidades</p>
     </div>
-
-    <!-- Mensajes de error/éxito -->
-    {% if messages %}
-    <div class="messages-container">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <!-- Formulario de Generación -->
     <form method="post" action="{% url 'qr_generator:generate_qr_codes' %}" class="qr-form" id="qrForm">
@@ -146,7 +123,8 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script src="{% static 'qr_generator/js/script.js' %}"></script>
-</body>
-</html>
+{% endblock %}

@@ -1,24 +1,17 @@
+{% extends 'organization/base_admin_views.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="{% static 'statistical_summary/css/styles.css' %}">
-    <!-- Chart.js CDN (genérico en jsdelivr) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Plugin para mostrar etiquetas dentro de las gráficas -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-</head>
-<body>
-<!-- NAVBAR SUPERIOR: enlace rápido al panel de administración -->
-<nav class="top-navbar" role="navigation" aria-label="Admin navigation">
-  <div class="top-navbar-inner">
-    <a href="{% url 'admin:index' %}" class="top-nav-link" title="Volver al panel de administración">Panel de Administrador</a>
-  </div>
-</nav>
 
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'statistical_summary/css/styles.css' %}">
+<!-- Chart.js CDN (genérico en jsdelivr) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Plugin para mostrar etiquetas dentro de las gráficas -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+{% endblock %}
+
+{% block content %}
 <div class="dashboard-container">
     {% if not has_data %}
         <div class="alert alert-danger">
@@ -155,10 +148,11 @@
         {% endif %}
     {% endif %}
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script src="{% static 'statistical_summary/js/dashboard_charts.js' %}"></script>
 <script src="{% static 'statistical_summary/js/complaint_chart.js' %}"></script>
 <script src="{% static 'statistical_summary/js/survey_chart.js' %}"></script>
 <script src="{% static 'statistical_summary/js/filter_script.js' %}"></script>
-</body>
-</html>
+{% endblock %}

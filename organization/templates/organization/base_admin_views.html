@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title }}{% endblock %}</title>
+    
+    <!-- Estilos base compartidos -->
+    <link rel="stylesheet" href="{% static 'organization/css/admin_styles.css' %}">
+    
+    <!-- Estilos específicos de cada vista -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- NAVBAR SUPERIOR: enlace rápido al panel de administración -->
+    <nav class="top-navbar" role="navigation" aria-label="Admin navigation">
+        <div class="top-navbar-inner">
+            <a href="{% url 'admin:index' %}" class="top-nav-link" title="Volver al panel de administración">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Panel de Administrador
+            </a>
+        </div>
+    </nav>
+
+    <!-- Mensajes de error/éxito del sistema -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Contenido principal de la vista -->
+    {% block content %}{% endblock %}
+
+    <!-- Scripts generales -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
