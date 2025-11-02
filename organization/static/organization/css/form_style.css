@@ -582,3 +582,31 @@ textarea.form-control {
     white-space: nowrap;
     border-width: 0;
 }
+
+/* Center and style the admin link placed under the survey form */
+.admin-link-container {
+    text-align: center;
+    margin: 1.25rem 0 1.5rem;
+}
+
+.admin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    background: transparent; /* keep appearance consistent with surrounding UI */
+}
+
+.admin-link:hover {
+    text-decoration: none;
+    opacity: 0.95;
+}
+
+.admin-link .admin-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+}

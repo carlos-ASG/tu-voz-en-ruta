@@ -1,9 +1,9 @@
 {% extends 'interview/base.html' %}
 
-{% block title %}Seleccionar Unidad - Encuesta de Satisfacción{% endblock %}
+{% block title %}Seleccionar Organización{% endblock %}
 
-{% block header_title %}Selección de Unidad{% endblock %}
-{% block header_subtitle %}Por favor selecciona la unidad en la que viajaste{% endblock %}
+{% block header_title %}Selección de Organización{% endblock %}
+{% block header_subtitle %}Por favor selecciona la organización en la que viajaste{% endblock %}
 
 {% block content %}
 <form method="post" action="{% url 'organization:select_organization' %}" class="survey-form" id="selectUnitForm">
@@ -13,7 +13,7 @@
     <section class="form-section unit-section">
         <h2 class="section-title">
             <span class="section-number">1</span>
-            Información del Viaje
+            Información de la organización
         </h2>
         
         {% if form.errors %}
@@ -48,6 +48,16 @@
         </button>
     </div>
 </form>
+    
+    <!-- Enlace al Super-Admin (esquema público) -->
+    <p class="admin-link-container" style="text-align:center;">
+        <a href="/super-admin/" class="admin-link" title="Super Admin">
+            <svg class="admin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </a>
+    </p>
 {% endblock %}
 
 {% block extra_js %}
