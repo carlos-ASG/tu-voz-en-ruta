@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.shortcuts import redirect
-from django.urls import reverse
 
 from .models import StatisticalSummary
 from transport.admin import tenant_admin_site

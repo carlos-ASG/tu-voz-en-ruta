@@ -62,7 +62,8 @@ TENANT_APPS = [
     'django.contrib.messages',
     'interview.apps.InterviewConfig',
     'statistical_summary.apps.StatisticalSummaryConfig',
-    'transport.apps.TransportConfig',  # ← DEBE estar aquí
+    'transport.apps.TransportConfig',
+    'qr_generator.apps.QrGeneratorConfig',
 ]
 
 # 2. Apps compartidas (transport NO va aquí)

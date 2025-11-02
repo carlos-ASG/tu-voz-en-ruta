@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{% static 'qr_generator/css/style.css' %}">
+</head>
+<body>
+<!-- NAVBAR SUPERIOR: enlace rápido al panel de administración -->
+<nav class="top-navbar" role="navigation" aria-label="Admin navigation">
+  <div class="top-navbar-inner">
+    <a href="{% url 'admin:index' %}" class="top-nav-link" title="Volver al panel de administración">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Panel de Administrador
+    </a>
+  </div>
+</nav>
+
+<div class="qr-generator-container">
+    <!-- Header Section -->
+    <div class="qr-header">
+        <h1>Generador de Códigos QR</h1>
+        <p class="qr-subtitle">Genera códigos QR para las encuestas de tus unidades</p>
+    </div>
+
+    <!-- Mensajes de error/éxito -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Formulario de Generación -->
+    <form method="post" action="{% url 'qr_generator:generate_qr_codes' %}" class="qr-form" id="qrForm">
+        {% csrf_token %}
+        
+        <!-- Sección: Tipo de selección -->
+        <div class="form-section">
+            <h2 class="section-title">
+                Selecciona el tipo de generación
+            </h2>
+            
+            {% if form.selection_type.errors %}
+            <div class="field-errors">
+                {{ form.selection_type.errors }}
+            </div>
+            {% endif %}
+            
+            <div class="radio-group">
+                {% for radio in form.selection_type %}
+                <label class="radio-option">
+                    {{ radio.tag }}
+                    <span class="radio-label">{{ radio.choice_label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Sección: Unidad única (oculta inicialmente) -->
+        <div class="form-section" id="singleUnitSection" style="display: none;">
+            <h2 class="section-title">
+                Selecciona una unidad
+            </h2>
+            
+            <div class="form-group">
+                {{ form.single_unit.label_tag }}
+                {{ form.single_unit }}
+                {% if form.single_unit.errors %}
+                <div class="field-errors">
+                    {{ form.single_unit.errors }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sección: Rango de unidades (oculta inicialmente) -->
+        <div class="form-section" id="rangeSection" style="display: none;">
+            <h2 class="section-title">
+                Define el rango de unidades
+            </h2>
+            
+            <div class="range-group">
+                <div class="form-group">
+                    {{ form.start_unit.label_tag }}
+                    {{ form.start_unit }}
+                    {% if form.start_unit.errors %}
+                    <div class="field-errors">
+                        {{ form.start_unit.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="range-separator">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </div>
+                
+                <div class="form-group">
+                    {{ form.end_unit.label_tag }}
+                    {{ form.end_unit }}
+                    {% if form.end_unit.errors %}
+                    <div class="field-errors">
+                        {{ form.end_unit.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Mensaje para "Todas las unidades" -->
+        <div class="form-section" id="allUnitsSection">
+            <div class="info-box">
+                <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4M12 8h.01"></path>
+                </svg>
+                <p>Se generarán códigos QR para <strong>todas las unidades</strong> registradas en el sistema.</p>
+            </div>
+        </div>
+
+        <!-- Errores generales del formulario -->
+        {% if form.non_field_errors %}
+        <div class="form-errors">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Botón de generación -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <path d="M7 7h.01M17 7h.01M7 17h.01M17 17h.01"></path>
+                </svg>
+                Generar Códigos QR
+            </button>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'qr_generator/js/script.js' %}"></script>
+</body>
+</html>

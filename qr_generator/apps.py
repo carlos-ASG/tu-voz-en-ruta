@@ -5,4 +5,3 @@ class QrGeneratorConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'qr_generator'
     verbose_name = 'Generador de QR'
-    label = 'Generador de QR'
