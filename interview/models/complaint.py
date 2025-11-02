@@ -13,7 +13,8 @@ class Complaint(models.Model):
     created_at = models.DateTimeField(default=timezone.now, editable=False, verbose_name='Fecha de creación')
 
     def __str__(self):
-        return f'Queja {self.id} - {self.unit.unit_number if self.unit else "-"}'
+        # ✅ Cambiar 'unit.unit_number' por 'unit.transit_number'
+        return f'Queja {self.id} - {self.unit.transit_number if self.unit else "-"}'
 
     class Meta:
         db_table = 'complaints'

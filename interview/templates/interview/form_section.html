@@ -7,27 +7,27 @@
 <form method="post" action="{% url 'interview:submit_survey' %}" class="survey-form" id="surveyForm">
     {% csrf_token %}
     
-    <!-- SECCIÓN 1: Selección de Unidad -->
+    <!-- SECCIÓN 0: Selección de Unidad -->
     <section class="form-section unit-info-section">
         <h2 class="section-title">
             <span class="section-number">0</span>
             Selección de Unidad
         </h2>
         
-        {% if unit_id %}
-        <!-- Si ya hay unit_id, mostrar info de la unidad con campo hidden -->
+        {% if transit_number %}
+        <!-- Si ya hay transit_number, mostrar info de la unidad con campo hidden -->
         <div class="unit-info-box">
             {{ unit_form.unit }}
             
             {% if unit_form.unit.value %}
-                <p><strong>Unidad seleccionada:</strong> {{ unit_form.unit.field.queryset.first.unit_number }}</p>
+                <p><strong>Unidad seleccionada:</strong> {{ unit_form.unit.field.queryset.first.transit_number }}</p>
                 {% if unit_form.unit.field.queryset.first.route %}
                 <p><strong>Ruta:</strong> {{ unit_form.unit.field.queryset.first.route.name }}</p>
                 {% endif %}
             {% endif %}
         </div>
         {% else %}
-        <!-- Si no hay unit_id, mostrar selector -->
+        <!-- Si no hay transit_number, mostrar selector -->
         <div class="form-group">
             {{ unit_form.unit.errors }}
             {{ unit_form.unit.label_tag }}
@@ -39,7 +39,7 @@
         {% endif %}
     </section>
 
-    <!-- SECCIÓN 2: Preguntas de la Encuesta -->
+    <!-- SECCIÓN 1: Preguntas de la Encuesta -->
     <section class="form-section questions-section">
         <h2 class="section-title">
             <span class="section-number">1</span>
@@ -110,7 +110,7 @@
         {% endfor %}
     </section>
 
-    <!-- SECCIÓN 3: Quejas y Sugerencias -->
+    <!-- SECCIÓN 2: Quejas y Sugerencias -->
     <section class="form-section complaint-section">
         <h2 class="section-title">
             <span class="section-number">2</span>

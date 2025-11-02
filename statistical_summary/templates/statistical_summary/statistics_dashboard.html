@@ -120,7 +120,7 @@
                     <option value="">-- Seleccionar camión --</option>
                     {% for unit in units %}
                     <option value="{{ unit.id }}" {% if selected_unit == unit.id|stringformat:"s" %}selected{% endif %}>
-                        {{ unit.unit_number }}
+                        {{ unit.transit_number }}
                     </option>
                     {% endfor %}
                 </select>

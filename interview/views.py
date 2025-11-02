@@ -9,24 +9,24 @@ from .forms.select_unit_form import SelectUnitForm
 from .forms.survery_form import SurveyForm
 
 
-def index(request):
-    return HttpResponse(f"<h1>{request.tenant}</h1>")
-
-
 def survey_form(request):
     """
     Vista para mostrar el formulario de encuesta con preguntas dinámicas.
     Maneja tres formularios separados: selección de unidad, preguntas de encuesta y quejas.
+    
+    Query params:
+        transit_number: Número de tránsito de la unidad (opcional)
     """
-    unit_id = request.GET.get('unit_id', None)
+    # ✅ Cambiar de unit_id a transit_number
+    transit_number = request.GET.get('transit_number', None)
     
     # Inicializar los tres formularios
-    unit_form = SelectUnitForm(unit_id=unit_id, data=request.POST or None)
+    unit_form = SelectUnitForm(transit_number=transit_number, data=request.POST or None)
     survey_form_obj = SurveyForm(data=request.POST or None)
     complaint_form = ComplaintForm(data=request.POST or None)
     
     context = {
-        'unit_id': unit_id,
+        'transit_number': transit_number,  # ✅ Cambiar nombre de variable
         'unit_form': unit_form,
         'survey_form': survey_form_obj,
         'complaint_form': complaint_form,
@@ -44,18 +44,20 @@ def submit_survey(request):
     if request.method != 'POST':
         return redirect('interview:survey_form')
     
-    # Obtener unit_id desde POST o GET
-    unit_id = request.POST.get('unit') or request.GET.get('unit_id')
+    # ✅ Obtener el UUID de la unidad desde POST
+    # El formulario envía el campo 'unit' con el pk (UUID) de la unidad
+    unit_pk = request.POST.get('unit')
     
-    if not unit_id:
+    if not unit_pk:
         messages.error(request, 'Debes seleccionar una unidad para continuar.')
         return redirect('interview:survey_form')
     
-    # Validar que la unidad pertenece a la organización actual
-    unit = get_object_or_404(Unit, id=unit_id)
+    # Validar que la unidad existe (buscar por pk UUID)
+    unit = get_object_or_404(Unit, pk=unit_pk)
     
     # Inicializar los tres formularios con los datos POST
-    unit_form = SelectUnitForm(unit_id=unit_id, data=request.POST)
+    # Pasar transit_number para que el formulario sepa que ya hay una unidad seleccionada
+    unit_form = SelectUnitForm(transit_number=unit.transit_number, data=request.POST)
     survey_form = SurveyForm(data=request.POST)
     complaint_form = ComplaintForm(data=request.POST)
     
@@ -69,7 +71,7 @@ def submit_survey(request):
         messages.error(request, 'Por favor corrige los errores en el formulario.')
         
         context = {
-            'unit_id': unit_id,
+            'transit_number': unit.transit_number,  # ✅ Cambiar nombre
             'unit_form': unit_form,
             'survey_form': survey_form,
             'complaint_form': complaint_form,
@@ -162,7 +164,7 @@ def submit_survey(request):
         print(f'Error en submit_survey: {e}')
         
         context = {
-            'unit_id': unit_id,
+            'transit_number': unit.transit_number,  # ✅ Cambiar nombre
             'unit_form': unit_form,
             'survey_form': survey_form,
             'complaint_form': complaint_form,

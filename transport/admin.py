@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django_tenants.admin import TenantAdminMixin
+
 
 from .models import Route, Unit
 
@@ -18,16 +18,16 @@ class TenantAdminSite(admin.AdminSite):
 #     ordering = ('username',)
 #     readonly_fields = ('date_joined', 'last_login')
 
-class RouteAdmin(TenantAdminMixin, admin.ModelAdmin):
+class RouteAdmin(admin.ModelAdmin):
     list_display = ('name', 'created_at', 'updated_at')
     search_fields = ('name',)
     readonly_fields = ('created_at', 'updated_at')
     exclude = ('metadata',)
 
-class UnitAdmin(TenantAdminMixin, admin.ModelAdmin):
-    list_display = ('unit_number', 'route', 'created_at', 'updated_at')
-    search_fields = ('unit_number',)
-    ordering = ('unit_number',)
+class UnitAdmin(admin.ModelAdmin):
+    list_display = ('transit_number', 'internal_number', 'owner', 'route', 'created_at', 'updated_at')
+    search_fields = ('transit_number', 'internal_number', 'owner')
+    ordering = ('transit_number', 'internal_number', 'owner')
     readonly_fields = ('created_at', 'updated_at')
     # hide metadata from admin and prevent editing through admin UI
     exclude = ('metadata',)

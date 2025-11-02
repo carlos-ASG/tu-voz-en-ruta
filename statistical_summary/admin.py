@@ -35,7 +35,6 @@ class StatisticalSummaryAdmin(admin.ModelAdmin):
 
 
 # Registrar en AMBOS sitios de admin
-admin.site.register(StatisticalSummary, StatisticalSummaryAdmin)  # Admin por defecto
 tenant_admin_site.register(StatisticalSummary, StatisticalSummaryAdmin)  # Admin personalizado
 
 

@@ -266,14 +266,14 @@ def get_units_and_routes() -> dict:
     Returns:
         dict: {
             "routes": [{"id": uuid, "name": str}, ...],
-            "units": [{"id": uuid, "number": str}, ...]
+            "units": [{"id": uuid, "transit_number": str}, ...]  # ✅ Cambiar 'unit_number' a 'transit_number'
         }
     """
     # Obtener rutas (el schema ya filtra por tenant)
     routes = Route.objects.order_by('name').values('id', 'name')
     
-    # Obtener unidades (el schema ya filtra por tenant)
-    units = Unit.objects.order_by('unit_number').values('id', 'unit_number')
+    # ✅ Cambiar 'unit_number' por 'transit_number'
+    units = Unit.objects.order_by('transit_number').values('id', 'transit_number')
     
     return {
         "routes": list(routes),

@@ -9,7 +9,7 @@ class SurveySubmission(models.Model):
     submitted_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f'Submission {self.id} for Unit {self.unit.unit_number}'
+        return f'Submission {self.id} for Unit {self.unit.transit_number}'
 
     class Meta:
         db_table = 'survey_submissions'

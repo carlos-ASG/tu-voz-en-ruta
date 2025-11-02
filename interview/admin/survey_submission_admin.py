@@ -6,7 +6,8 @@ from .read_only_admin_mixin import ReadOnlyAdminMixin
 """ @admin.register(SurveySubmission)
 class SurveySubmissionAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = ('unit', 'submitted_at')
-    search_fields = ('unit__unit_number',)
+    # ✅ Cambiar 'unit__unit_number' por 'unit__transit_number'
+    search_fields = ('unit__transit_number',)
     # SurveySubmission model tiene solo: id, unit, submitted_at
     readonly_fields = ('id', 'unit', 'submitted_at')
     ordering = ('-submitted_at',)
@@ -30,5 +31,4 @@ class SurveySubmissionAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         fields = list(fields)
         if not request.user.is_superuser and 'organization' in fields:
             fields.remove('organization')
-        return tuple(fields)
-"""
+        return fields """
