@@ -4,6 +4,7 @@ from django.contrib import messages
 from io import BytesIO
 import zipfile
 import qrcode
+import re
 
 from .forms import QRGeneratorForm
 
@@ -50,20 +51,26 @@ def generate_qr_codes(request):
         return redirect('qr_generator:qr_generator')
     
     # Obtener información del tenant para construir las URLs
-    tenant = request.tenant
-    domain = tenant.get_primary_domain()
+    tenant = request.tenant.schema_name
     
-    if not domain:
-        messages.error(request, 'No se pudo obtener el dominio del tenant.')
+    if not tenant:
+        messages.error(request, 'No se pudo obtener el tenant.')
         return redirect('qr_generator:qr_generator')
     
+    # Helper para sanitizar nombres de archivo
+    def _safe_filename(s: str) -> str:
+        s = str(s)
+        # Reemplaza caracteres no permitidos por '_' (mantiene letras, números, guiones, puntos y guion bajo)
+        return re.sub(r'[^A-Za-z0-9._-]', '_', s)
+
     # Si es una sola unidad, retornar la imagen directamente
     if units.count() == 1:
         unit = units.first()
-        qr_image = generate_qr_image(unit, domain.domain)
-        
+        qr_image = generate_qr_image(unit, tenant)
+
         response = HttpResponse(content_type='image/png')
-        response['Content-Disposition'] = f'attachment; filename="QR_{unit.transit_number}.png"'
+        filename = f"{_safe_filename(unit.transit_number)}.png"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
         qr_image.save(response, 'PNG')
         return response
     
@@ -72,30 +79,27 @@ def generate_qr_codes(request):
     
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
         for unit in units:
-            qr_image = generate_qr_image(unit, domain.domain)
-            
+            qr_image = generate_qr_image(unit, tenant)
+
             # Guardar la imagen en un buffer temporal
             img_buffer = BytesIO()
             qr_image.save(img_buffer, 'PNG')
             img_buffer.seek(0)
-            
-            # Agregar al ZIP con nombre descriptivo
-            filename = f"QR_{unit.transit_number}"
-            if unit.route:
-                filename += f"_Ruta_{unit.route.name}"
-            filename += ".png"
-            
+
+            # Agregar al ZIP usando únicamente el transit_number (sanitizado)
+            filename = f"{_safe_filename(unit.transit_number)}.png"
             zip_file.writestr(filename, img_buffer.getvalue())
     
     # Preparar respuesta con el ZIP
     zip_buffer.seek(0)
     response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-    response['Content-Disposition'] = f'attachment; filename="QR_Codes_{tenant.schema_name}.zip"'
+    # tenant es una cadena (schema_name) — usarla directamente
+    response['Content-Disposition'] = f'attachment; filename="QR_Codes_{tenant}.zip"'
     
     return response
 
 
-def generate_qr_image(unit, domain):
+def generate_qr_image(unit, tenant):
     """
     Genera una imagen QR para una unidad específica.
     
@@ -107,8 +111,8 @@ def generate_qr_image(unit, domain):
         PIL.Image: Imagen del código QR
     """
     # Construir la URL completa para la encuesta de esta unidad
-    # Formato: http://alianza.tuvozenruta.com:8000/interview/?transit_number=ABC123
-    url = f"http://{domain}:8000/interview/?transit_number={unit.transit_number}"
+    # Formato: http://alianza.tuvozenruta.com/interview/?transit_number=ABC123
+    url = f"http://{tenant}.tuvozenruta.com/interview/?transit_number={unit.transit_number}"
     
     # Crear el código QR
     qr = qrcode.QRCode(
