@@ -57,7 +57,7 @@ class SurveyForm(forms.Form):
                 options = question.options.all().order_by('position')
                 self.fields[field_name] = forms.ModelChoiceField(
                     queryset=options,
-                    required=False,
+                    required=True,
                     label=question.text,
                     widget=forms.RadioSelect(attrs={
                         'class': 'radio-options',
@@ -70,7 +70,7 @@ class SurveyForm(forms.Form):
                 options = question.options.all().order_by('position')
                 self.fields[field_name] = forms.ModelMultipleChoiceField(
                     queryset=options,
-                    required=False,
+                    required=True,
                     label=question.text,
                     widget=forms.CheckboxSelectMultiple(attrs={
                         'class': 'checkbox-options',
