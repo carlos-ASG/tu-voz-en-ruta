@@ -184,6 +184,72 @@ canvas {
     max-height: 350px;
 }
 
+/* ==================== General Statistics Section ==================== */
+.general-statistics-section {
+    margin-top: 40px;
+    margin-bottom: 30px;
+}
+
+/* ==================== Complaints by Unit ==================== */
+.complaints-by-unit-container {
+    background: var(--bg-white);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: box-shadow 0.3s ease;
+}
+
+.complaints-by-unit-container:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.complaints-by-unit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid var(--warning-color);
+}
+
+.complaints-by-unit-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.complaints-by-unit-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.complaints-by-unit-chart-wrapper {
+    position: relative;
+    height: 400px;
+    margin-top: 20px;
+}
+
+.complaints-by-unit-chart-wrapper canvas {
+    max-height: 400px;
+    width: 100% !important;
+}
+
+.no-data-placeholder {
+    background: var(--bg-white);
+    padding: 40px 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+}
+
+.no-complaints-by-unit-message {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-style: italic;
+}
+
 /* ==================== Alerts ==================== */
 /* Alertas ahora heredadas de admin_styles.css */
 .alert h3 {
@@ -494,6 +560,31 @@ canvas {
     .btn-clear-filter {
         width: 100%;
     }
+    
+    /* General Statistics responsive */
+    .general-statistics-section {
+        margin-top: 30px;
+    }
+    
+    .complaints-by-unit-container {
+        padding: 20px;
+    }
+    
+    .complaints-by-unit-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .complaints-by-unit-chart-wrapper {
+        height: 350px;
+    }
+    
+    .complaints-by-unit-chart-wrapper canvas {
+        max-height: 350px;
+    }
+    
+    .no-data-placeholder {
+        padding: 30px 20px;
+    }
 }
 
 /* Móviles (hasta 480px) */
@@ -653,12 +744,47 @@ canvas {
     
     /* Alertas */
     .alert {
-        padding: 15px;
+        padding: 12px;
         margin-bottom: 15px;
     }
     
     .alert h3 {
-        font-size: 1.1rem;
+        font-size: 1rem;
+    }
+    
+    /* General Statistics mobile */
+    .general-statistics-section {
+        margin-top: 20px;
+    }
+    
+    .complaints-by-unit-container {
+        padding: 15px;
+    }
+    
+    .complaints-by-unit-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .complaints-by-unit-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .complaints-by-unit-chart-wrapper {
+        height: 300px;
+    }
+    
+    .complaints-by-unit-chart-wrapper canvas {
+        max-height: 300px;
+    }
+    
+    .no-data-placeholder {
+        padding: 30px 15px;
+    }
+    
+    .no-complaints-by-unit-message {
+        font-size: 0.9rem;
     }
 }
 

@@ -45,54 +45,75 @@ def calculate_statistics(period: str, route_id: str = None, unit_id: str = None)
     complaints_data = get_complaints_summary(complaints_filters)
     total_complaints = complaints_data.get('total_complaints', 0)
     complaints_by_reason = complaints_data.get('by_reason', {})
+    
+    # Obtener resumen de quejas por unidad (número de tránsito)
+    complaints_by_unit = get_complaints_by_unit(complaints_filters)
 
     # ==================== KPI 3: Resumen de Preguntas ====================
     questions_statistics = questions_summary(start_date, route_id, unit_id)
 
     # ==================== KPI 4: Línea de tiempo de envíos ====================
-    survey_timeline = get_survey_submissions_timeline(submissions_filters)
+    # Si el período es "today", agrupar por hora en lugar de por día
+    group_by_hour = (period == "today")
+    survey_timeline = get_survey_submissions_timeline(submissions_filters, group_by_hour=group_by_hour)
     
     return {
         "period_label": period_label,
         "total_submissions": total_submissions,
         "total_complaints": total_complaints,
         "complaints_by_reason": complaints_by_reason,
+        "complaints_by_unit": complaints_by_unit,
         "questions_statistics": questions_statistics,
         "survey_submissions_timeline": survey_timeline,
     }
 
-def get_survey_submissions_timeline(submissions_filters: dict) -> dict:
+def get_survey_submissions_timeline(submissions_filters: dict, group_by_hour: bool = False) -> dict:
     """Retorna una línea de tiempo de envíos de encuestas.
 
     Args:
         submissions_filters: filtros a aplicar sobre SurveySubmission queryset (ej. fecha, unit_id)
+        group_by_hour: si es True, agrupa por hora; si es False, agrupa por día
 
     Returns:
         dict: {
-            'dates': [str, ...],  # Fechas en formato 'YYYY-MM-DD'
-            'counts': [int, ...]  # Conteo de envíos por fecha
+            'dates': [str, ...],  # Fechas en formato 'YYYY-MM-DD' o 'MM-DD HH:00'
+            'counts': [int, ...]  # Conteo de envíos por fecha/hora
         }
     """
-    from django.db.models.functions import TruncDate
+    from django.db.models.functions import TruncDate, TruncHour
     
-    # Obtener envíos agrupados por fecha
-    submissions_by_date = (
-        SurveySubmission.objects.filter(**submissions_filters)
-        .annotate(date=TruncDate('submitted_at'))
-        .values('date')
-        .annotate(count=Count('id'))
-        .order_by('date')
-    )
+    if group_by_hour:
+        # Agrupar por hora
+        submissions_by_time = (
+            SurveySubmission.objects.filter(**submissions_filters)
+            .annotate(time=TruncHour('submitted_at'))
+            .values('time')
+            .annotate(count=Count('id'))
+            .order_by('time')
+        )
+    else:
+        # Agrupar por día
+        submissions_by_time = (
+            SurveySubmission.objects.filter(**submissions_filters)
+            .annotate(time=TruncDate('submitted_at'))
+            .values('time')
+            .annotate(count=Count('id'))
+            .order_by('time')
+        )
     
     # Separar en listas de fechas y conteos
     dates = []
     counts = []
     
-    for item in submissions_by_date:
-        date_obj = item.get('date')
-        if date_obj:
-            # Convertir a string en formato 'YYYY-MM-DD'
-            dates.append(date_obj.strftime('%Y-%m-%d'))
+    for item in submissions_by_time:
+        time_obj = item.get('time')
+        if time_obj:
+            if group_by_hour:
+                # Formato: 'HH:00'
+                dates.append(time_obj.strftime('%H:00'))
+            else:
+                # Formato: 'YYYY-MM-DD'
+                dates.append(time_obj.strftime('%Y-%m-%d'))
             counts.append(item.get('count', 0))
     
     return {
@@ -137,6 +158,43 @@ def get_complaints_summary(complaints_filters: dict) -> dict:
         'total_complaints': total_complaints,
         'by_reason': by_reason,
     }
+
+
+def get_complaints_by_unit(complaints_filters: dict) -> dict:
+    """Retorna un resumen de quejas agrupadas por número de tránsito de unidad.
+
+    Args:
+        complaints_filters: filtros a aplicar sobre Complaint queryset (ej. fecha, unit_id)
+
+    Returns:
+        dict: {
+            'transit_number': count,
+            ...
+        }
+        Ejemplo: {
+            'ABC123': 5,
+            'XYZ789': 3,
+            'DEF456': 1
+        }
+    """
+    # Filtrar quejas y agrupar por unidad
+    complaints_by_unit = (
+        Complaint.objects.filter(**complaints_filters)
+        .exclude(unit__isnull=True)  # Excluir quejas sin unidad asociada
+        .values('unit__transit_number')
+        .annotate(count=Count('id'))
+        .order_by('-count')  # Ordenar por cantidad de quejas (descendente)
+    )
+
+    # Convertir a diccionario simple: {transit_number: count}
+    by_unit = {}
+    for item in complaints_by_unit:
+        transit_number = item.get('unit__transit_number')
+        count = item.get('count', 0)
+        if transit_number:
+            by_unit[transit_number] = count
+
+    return by_unit
     
 
 def get_start_date(period: str) -> tuple[datetime, str]:

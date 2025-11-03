@@ -9,7 +9,7 @@ class StatisticalSummary(SurveySubmission):
     """
     class Meta:
         proxy = True
-        verbose_name = "Dashboard de Estadísticas"
-        verbose_name_plural = "Dashboard de Estadísticas"
+        verbose_name = "Resumen de Estadísticas"
+        verbose_name_plural = "Resumen de Estadísticas"
         # Desactivar permisos por defecto para evitar conflictos con el modelo base
         default_permissions = ()  # No crear permisos add, change, delete, view

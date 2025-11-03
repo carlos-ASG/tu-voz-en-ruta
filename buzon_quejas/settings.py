@@ -293,6 +293,8 @@ JAZZMIN_SETTINGS = {
         "transport.unit": "fas fa-bus",
         # Statistical Summary app icons
         "statistical_summary.statisticalsummary": "fas fa-chart-pie",
+        # QR Generator app icons
+        "qr_generator.qrgenerator": "fas fa-qrcode",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",

@@ -53,6 +53,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Convertir complaints_by_reason a JSON para el template
         complaints_by_reason_json = json.dumps(statistics.get('complaints_by_reason', []))
         survey_submissions_timeline_json = json.dumps(statistics.get('survey_submissions_timeline', {}))
+        complaints_by_unit_json = json.dumps(statistics.get('complaints_by_unit', {}))
         
         context = {
             'has_data': bool(statistics),
@@ -65,6 +66,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             **statistics,
             'complaints_by_reason_json': complaints_by_reason_json,
             'survey_submissions_timeline_json': survey_submissions_timeline_json,
+            'complaints_by_unit_json': complaints_by_unit_json,
         }
         
         return context

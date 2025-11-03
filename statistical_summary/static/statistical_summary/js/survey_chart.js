@@ -37,14 +37,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const dates = timelineData.dates;
         const counts = timelineData.counts;
         
+        // Detectar si los datos están en formato de hora (HH:00) o fecha (YYYY-MM-DD)
+        const isHourlyFormat = dates.length > 0 && /^\d{2}:\d{2}$/.test(dates[0]);
+        
         // Formatear fechas para mejor visualización
-        const formattedDates = dates.map(date => {
-            const d = new Date(date);
-            // Formato: "15 Ene" o "15/01" según preferencia
-            const day = d.getDate();
-            const month = d.getMonth() + 1;
-            return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
-        });
+        let formattedDates;
+        if (isHourlyFormat) {
+            // Si es formato horario, usar directamente sin conversión
+            formattedDates = dates;
+        } else {
+            // Si es formato de fecha, formatear a día/mes
+            formattedDates = dates.map(date => {
+                const d = new Date(date);
+                // Formato: "15 Ene" o "15/01" según preferencia
+                const day = d.getDate();
+                const month = d.getMonth() + 1;
+                return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+            });
+        }
         
         // Configuración de la gráfica
         const ctx = surveysCanvas.getContext('2d');
@@ -86,9 +96,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         displayColors: false,
                         callbacks: {
                             title: function(context) {
-                                // Mostrar fecha original en el tooltip
+                                // Mostrar fecha/hora original en el tooltip
                                 const index = context[0].dataIndex;
-                                return dates[index];
+                                const originalDate = dates[index];
+                                
+                                // Si es formato horario, mostrar solo la hora
+                                if (isHourlyFormat) {
+                                    return `Hora: ${originalDate}`;
+                                }
+                                // Si es formato de fecha, mostrar la fecha original
+                                return originalDate;
                             },
                             label: function(context) {
                                 const value = context.parsed.y;
@@ -123,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         },
                         title: {
                             display: true,
-                            text: 'Fecha',
+                            text: isHourlyFormat ? 'Hora' : 'Fecha',
                             color: '#333',
                             font: {
                                 size: 12,
