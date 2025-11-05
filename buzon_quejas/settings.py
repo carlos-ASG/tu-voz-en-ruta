@@ -54,6 +54,7 @@ TENANT_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.contrib.messages',
+    'django_recaptcha',  # django-recaptcha
     'interview.apps.InterviewConfig',
     'statistical_summary.apps.StatisticalSummaryConfig',
     'transport.apps.TransportConfig',
@@ -377,3 +378,6 @@ STORAGES = {
 
 PUBLIC_SCHEMA_URLCONF = 'buzon_quejas.urls_public'  # URLs para el esquema público
 ROOT_URLCONF = "buzon_quejas.urls_tenant"
+
+RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
+RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
