@@ -68,7 +68,7 @@ SHARED_APPS = [
     'django_tenants',
     'organization.apps.OrganizationConfig',
     # transport NO va aquí
-    
+    'django_recaptcha',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

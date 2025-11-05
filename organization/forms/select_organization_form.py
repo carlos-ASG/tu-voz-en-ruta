@@ -1,7 +1,8 @@
-from os import name
 from django import forms
 
 from organization.models import Organization
+from django_recaptcha.fields import ReCaptchaField
+from django_recaptcha.widgets import ReCaptchaV2Checkbox
 
 
 class SelectOrganizationForm(forms.Form):
@@ -18,6 +19,14 @@ class SelectOrganizationForm(forms.Form):
             'class': 'form-control',
             'id': 'organization_id'
         })
+    )
+    captcha = ReCaptchaField(
+        widget=ReCaptchaV2Checkbox,
+        label='Verificación',
+        error_messages={
+            'required': 'Por favor completa la verificación reCAPTCHA.',
+            'invalid': 'Error en la verificación reCAPTCHA. Por favor intenta de nuevo.'
+        }
     )
 
     def __init__(self, *args, **kwargs):

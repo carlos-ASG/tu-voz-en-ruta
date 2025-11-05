@@ -10,7 +10,7 @@
     <!-- SECCIÓN 0: Selección de Unidad -->
     <section class="form-section unit-info-section">
         <h2 class="section-title">
-            <span class="section-number">0</span>
+            <span class="section-number">1</span>
             Selección de Unidad
         </h2>
         
@@ -42,7 +42,7 @@
     <!-- SECCIÓN 1: Preguntas de la Encuesta -->
     <section class="form-section questions-section">
         <h2 class="section-title">
-            <span class="section-number">1</span>
+            <span class="section-number">2</span>
             Califica tu Experiencia
         </h2>
         
@@ -113,7 +113,7 @@
     <!-- SECCIÓN 2: Quejas y Sugerencias -->
     <section class="form-section complaint-section">
         <h2 class="section-title">
-            <span class="section-number">2</span>
+            <span class="section-number">3</span>
             ¿Tienes alguna queja o sugerencia?
         </h2>
         <p class="section-description">
@@ -148,6 +148,10 @@
             </span>
         </a>
     </section>
+
+    <!-- SECCIÓN 3: Verificación reCAPTCHA -->
+    {{ survey_form.captcha.errors }}
+    {{ survey_form.captcha }}
 
     <!-- Botones de acción -->
     <div class="form-actions">

@@ -1,7 +1,7 @@
-
-
 from django import forms
 from ..models import Question
+from django_recaptcha.fields import ReCaptchaField
+from django_recaptcha.widgets import ReCaptchaV2Checkbox
 
 
 class SurveyForm(forms.Form):
@@ -9,6 +9,16 @@ class SurveyForm(forms.Form):
     Formulario dinámico para las preguntas de la encuesta.
     Genera campos automáticamente según las preguntas activas.
     """
+    
+    # Definir captcha como campo de clase para que se procese correctamente
+    captcha = ReCaptchaField(
+        widget=ReCaptchaV2Checkbox,
+        label='Verificación',
+        error_messages={
+            'required': 'Por favor completa la verificación reCAPTCHA.',
+            'invalid': 'Error en la verificación reCAPTCHA. Por favor intenta de nuevo.'
+        }
+    )
     
     def __init__(self, *args, **kwargs):
         """
