@@ -136,6 +136,11 @@
         </div>
     </section>
 
+    <!-- SECCIÓN 3: Verificación reCAPTCHA -->
+    {{ survey_form.captcha.errors }}
+    {{ survey_form.captcha }}
+
+
     <!-- SECCIÓN DE EMERGENCIA -->
     <section class="emergency-section">
         <a href="tel:911" class="emergency-link">
@@ -149,10 +154,7 @@
         </a>
     </section>
 
-    <!-- SECCIÓN 3: Verificación reCAPTCHA -->
-    {{ survey_form.captcha.errors }}
-    {{ survey_form.captcha }}
-
+    
     <!-- Botones de acción -->
     <div class="form-actions">
         <button type="reset" class="btn btn-secondary">
