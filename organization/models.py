@@ -20,4 +20,6 @@ class Organization(TenantMixin):
         verbose_name_plural = 'Organizaciones'
 
 class Domain(DomainMixin):
-    pass
+    class Meta:
+        verbose_name = 'Dominio'
+        verbose_name_plural = 'Dominios'

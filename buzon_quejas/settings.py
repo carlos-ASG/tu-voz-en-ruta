@@ -282,6 +282,7 @@ JAZZMIN_SETTINGS = {
         # Organization app icons (added)
         "organization": "fas fa-building",
         "organization.organization": "fas fa-building",
+        "organization.domain": "fas fa-globe",
         "organization.user": "fas fa-user",
         #transport app icons
         "transport.route": "fas fa-route",

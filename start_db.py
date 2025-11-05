@@ -166,13 +166,7 @@ def main():
     print_info("Este script inicializará la base de datos con:")
     print_info("  1. Esquema compartido (público)")
     print_info("  2. Organización pública con dominios")
-    
-    # Pedir confirmación
-    response = input("\n¿Deseas continuar? (s/n): ").lower().strip()
-    
-    if response != 's':
-        print("\nOperación cancelada.")
-        sys.exit(0)
+    print()
     
     # Ejecutar pasos
     steps = [
