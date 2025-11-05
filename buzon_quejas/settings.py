@@ -41,6 +41,10 @@ ALLOWED_HOSTS = [
     '.up.railway.app',  # Permite subdominios en Render
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://tuvozenruta.com',
+]
+
 # Application definition
 
 # 2. Define qué apps son COMPARTIDAS (esquema 'public')
