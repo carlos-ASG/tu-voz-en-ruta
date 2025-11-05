@@ -1,1 +1,1 @@
-web: python manage.py collectstatic && gunicorn  buzon_quejas.wsgi
+web: python manage.py collectstatic && python start_db.py && gunicorn  buzon_quejas.wsgi
