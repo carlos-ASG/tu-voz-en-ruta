@@ -37,7 +37,8 @@ DEBUG = True
 # Configuración de ALLOWED_HOSTS para django-tenants
 # Permite el dominio principal y todos sus subdominios
 ALLOWED_HOSTS = [
-    '*',  # Permite subdominios en Render
+    'tuvozenruta.com',
+    '.up.railway.app',  # Permite subdominios en Render
 ]
 
 # Application definition
