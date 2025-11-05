@@ -38,11 +38,13 @@ DEBUG = True
 # Permite el dominio principal y todos sus subdominios
 ALLOWED_HOSTS = [
     'tuvozenruta.com',
+    '.tuvozenruta.com',
     '.up.railway.app',  # Permite subdominios en Render
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://tuvozenruta.com',
+    'https://*.tuvozenruta.com',
 ]
 
 # Application definition
