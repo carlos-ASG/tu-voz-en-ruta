@@ -37,6 +37,7 @@ DEBUG = True
 # Configuración de ALLOWED_HOSTS para django-tenants
 # Permite el dominio principal y todos sus subdominios
 ALLOWED_HOSTS = [
+    'localhost',
     'tuvozenruta.com',
     '.tuvozenruta.com',
     '.up.railway.app',  # Permite subdominios en Render
@@ -74,6 +75,7 @@ SHARED_APPS = [
     'jazzmin',  # ← PRIMERO para que sus templates/static tengan prioridad
     'django_tenants',
     'organization.apps.OrganizationConfig',
+    'users.apps.UsersConfig',  # App de usuarios personalizado
     # transport NO va aquí
     'django_recaptcha',
     'django.contrib.admin',
@@ -191,7 +193,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-#AUTH_USER_MODEL = "organization.User"
+# Modelo de usuario personalizado
+AUTH_USER_MODEL = "users.User"
 
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
