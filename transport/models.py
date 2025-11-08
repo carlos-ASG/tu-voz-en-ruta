@@ -21,7 +21,7 @@ class Route(models.Model):
 class Unit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     transit_number = models.CharField(max_length=25, unique=True, verbose_name='Número de tránsito')
-    internal_number = models.CharField(max_length=8, blank=True, verbose_name='Número de interno')
+    internal_number = models.CharField(max_length=20, blank=True, verbose_name='Número de interno')
     owner = models.CharField(max_length=255, null=True, blank=True, verbose_name='Propietario')
     route = models.ForeignKey(Route, null=True, blank=True, on_delete=models.SET_NULL, related_name='units', verbose_name='Ruta')
     metadata = models.JSONField(null=True, blank=True)
