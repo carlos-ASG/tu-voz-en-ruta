@@ -1,0 +1,72 @@
+{% extends "organization/base.html" %}
+{% load static %}
+
+{% block title %}Organización Inactiva - {{ organization_name }}{% endblock %}
+
+{% block header_title %}Servicio Temporalmente No Disponible{% endblock %}
+{% block header_subtitle %}{{ organization_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inactive-message {
+        background-color: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 8px;
+        padding: 30px;
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .inactive-icon {
+        font-size: 64px;
+        color: #ffc107;
+        margin-bottom: 20px;
+    }
+
+    .inactive-title {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
+    .inactive-description {
+        font-size: 16px;
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .contact-info {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inactive-message">
+    <div class="inactive-icon">⚠️</div>
+
+    <h2 class="inactive-title">Servicio Temporalmente Inactivo</h2>
+
+    <p class="inactive-description">
+        Lo sentimos, el servicio de <strong>{{ organization_name }}</strong> se encuentra
+        temporalmente inactivo en este momento.
+    </p>
+
+    <p class="inactive-description">
+        Por favor, intenta nuevamente más tarde o contacta con la organización
+        para más información.
+    </p>
+
+    <div class="contact-info">
+        <p><strong>¿Necesitas ayuda?</strong></p>
+        <p>Por favor, contacta con el administrador de la organización para obtener más información sobre cuándo estará disponible el servicio nuevamente.</p>
+    </div>
+</div>
+{% endblock %}

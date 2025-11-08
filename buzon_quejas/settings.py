@@ -118,6 +118,7 @@ TENANT_DOMAIN_MODEL = "organization.Domain"
 
 MIDDLEWARE = [
     "django_tenants.middleware.main.TenantMainMiddleware",  # DEBE IR PRIMERO
+    "organization.middleware.TenantActiveMiddleware",  # Verificar si el tenant está activo
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
