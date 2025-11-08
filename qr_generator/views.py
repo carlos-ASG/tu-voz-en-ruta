@@ -5,6 +5,7 @@ from io import BytesIO
 import zipfile
 import qrcode
 import re
+from PIL import Image, ImageDraw, ImageFont
 
 from .forms import QRGeneratorForm
 
@@ -101,19 +102,20 @@ def generate_qr_codes(request):
 
 def generate_qr_image(unit, tenant):
     """
-    Genera una imagen QR para una unidad específica.
-    
+    Genera una imagen QR para una unidad específica con un encabezado que muestra
+    el número de tránsito.
+
     Args:
         unit: Instancia de Unit
-        domain: Dominio del tenant (ej: 'alianza.tuvozenruta.com')
-    
+        tenant: Schema name del tenant (ej: 'alianza')
+
     Returns:
-        PIL.Image: Imagen del código QR
+        PIL.Image: Imagen del código QR con encabezado
     """
     # Construir la URL completa para la encuesta de esta unidad
     # Formato: http://alianza.tuvozenruta.com/interview/?transit_number=ABC123
     url = f"http://{tenant}.tuvozenruta.com/interview/?transit_number={unit.transit_number}"
-    
+
     # Crear el código QR
     qr = qrcode.QRCode(
         version=1,  # Tamaño del QR (1 es el más pequeño)
@@ -121,11 +123,63 @@ def generate_qr_image(unit, tenant):
         box_size=10,  # Tamaño de cada "caja" del QR
         border=4,  # Grosor del borde
     )
-    
+
     qr.add_data(url)
     qr.make(fit=True)
-    
-    # Generar la imagen (PIL Image)
-    img = qr.make_image(fill_color="black", back_color="white")
-    
-    return img
+
+    # Generar la imagen QR base
+    qr_img = qr.make_image(fill_color="black", back_color="white")
+
+    # Convertir a RGB si es necesario (para poder agregar texto)
+    if qr_img.mode != 'RGB':
+        qr_img = qr_img.convert('RGB')
+
+    # Obtener dimensiones del QR
+    qr_width, qr_height = qr_img.size
+
+    # Configuración del encabezado
+    header_height = 80  # Altura del encabezado
+
+    # Crear una nueva imagen con espacio para el encabezado
+    total_height = header_height + qr_height
+    final_img = Image.new('RGB', (qr_width, total_height), 'white')
+
+    # Dibujar el encabezado
+    draw = ImageDraw.Draw(final_img)
+
+    # Intentar usar una fuente del sistema, si no está disponible usar la predeterminada
+    try:
+        # Tamaño de fuente para el título
+        font_title = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 36)
+    except:
+        try:
+            # Alternativa para Linux
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 36)
+        except:
+            # Si no hay fuentes disponibles, usar la predeterminada
+            font_title = ImageFont.load_default()
+
+    # Texto del encabezado (solo el número de tránsito)
+    title_text = unit.transit_number
+
+    # Calcular posiciones para centrar el texto
+    try:
+        # Método moderno de Pillow
+        title_bbox = draw.textbbox((0, 0), title_text, font=font_title)
+        title_width = title_bbox[2] - title_bbox[0]
+    except:
+        # Método legacy si textbbox no está disponible
+        title_width = len(title_text) * 20
+
+    title_x = (qr_width - title_width) // 2
+
+    # Centrar verticalmente el título en el encabezado
+    title_y = (header_height - 36) // 2  # 36 es el tamaño de fuente del título
+
+    # Dibujar el texto del encabezado
+    draw.text((title_x, title_y), title_text, fill='black', font=font_title)
+
+    # Pegar el código QR debajo del encabezado
+    final_img.paste(qr_img, (0, header_height))
+
+    return final_img
