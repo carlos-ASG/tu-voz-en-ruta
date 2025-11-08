@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import GroupAdmin, UserAdmin
+
 
 from django.utils.translation import gettext_lazy as _
 
@@ -27,7 +30,7 @@ class TenantAdminSite(admin.AdminSite):
 #     list_filter = ('is_staff', 'is_active')
 #     ordering = ('username',)
 #     readonly_fields = ('date_joined', 'last_login')
-    
+  
 #     # Agregar el campo organization a los fieldsets
 #     fieldsets = (
 #         (None, {'fields': ('username', 'password')}),
@@ -44,17 +47,7 @@ class TenantAdminSite(admin.AdminSite):
 #             'fields': ('username', 'password1', 'password2', 'email', 'is_staff', 'is_active'),
 #         }),
 #     )
-    
-#     def get_queryset(self, request):
-#         """Filtra usuarios para que solo muestre los de este tenant."""
-#         qs = super().get_queryset(request)
-#         return qs.filter(organization=request.tenant)
 
-#     def save_model(self, request, obj, form, change):
-#         """Asigna automáticamente el tenant al crear un usuario."""
-#         if not change:
-#             obj.organization = request.tenant
-#         super().save_model(request, obj, form, change)
 
 class RouteAdmin(admin.ModelAdmin):
     list_display = ('name', 'created_at', 'updated_at')
@@ -74,4 +67,5 @@ class UnitAdmin(admin.ModelAdmin):
 tenant_admin_site = TenantAdminSite(name='transport_admin')
 tenant_admin_site.register(Route, RouteAdmin)
 tenant_admin_site.register(Unit, UnitAdmin)
-# tenant_admin_site.register(User, UserAdmin)
+tenant_admin_site.register(User, UserAdmin)
+tenant_admin_site.register(Group, GroupAdmin)

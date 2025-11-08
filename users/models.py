@@ -10,15 +10,7 @@ class User(AbstractUser):
     Extiende AbstractUser para mantener funcionalidad estándar de Django.
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name='users',
-        verbose_name='Organización',
-        null=True,
-        blank=True,
-        help_text='Organización a la que pertenece el usuario'
-    )
+
 
     class Meta:
         db_table = 'users'

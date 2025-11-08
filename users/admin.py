@@ -21,7 +21,6 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Información personal'), {'fields': ('first_name', 'last_name', 'email')}),
-        (_('Organización'), {'fields': ('organization',)}),
         (_('Permisos'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
@@ -31,6 +30,8 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'email', 'organization', 'is_staff', 'is_active'),
+            'fields': ('username', 'password1', 'password2', 'email', 'is_staff', 'is_active'),
         }),
     )
+
+

@@ -67,6 +67,7 @@ TENANT_APPS = [
     'statistical_summary.apps.StatisticalSummaryConfig',
     'transport.apps.TransportConfig',
     'qr_generator.apps.QrGeneratorConfig',
+    'users.apps.UsersConfig',
 ]
 
 # 2. Apps compartidas (transport NO va aquí)
@@ -198,9 +199,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = "users.User"
 
 # Backend de autenticación personalizado para multi-tenancy
-AUTHENTICATION_BACKENDS = [
-    'users.backends.TenantAwareBackend',  # Backend personalizado que verifica el tenant
-]
+
 
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
