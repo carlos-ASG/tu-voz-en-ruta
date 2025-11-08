@@ -197,6 +197,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Modelo de usuario personalizado
 AUTH_USER_MODEL = "users.User"
 
+# Backend de autenticación personalizado para multi-tenancy
+AUTHENTICATION_BACKENDS = [
+    'users.backends.TenantAwareBackend',  # Backend personalizado que verifica el tenant
+]
+
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
     "site_title": "Tu voz en ruta",
