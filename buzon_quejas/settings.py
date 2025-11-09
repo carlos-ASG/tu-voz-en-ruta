@@ -63,11 +63,11 @@ TENANT_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.messages',
     'django_recaptcha',  # django-recaptcha
-    'interview.apps.InterviewConfig',
-    'statistical_summary.apps.StatisticalSummaryConfig',
-    'transport.apps.TransportConfig',
-    'qr_generator.apps.QrGeneratorConfig',
-    'users.apps.UsersConfig',
+    'apps.interview.apps.InterviewConfig',
+    'apps.statistical_summary.apps.StatisticalSummaryConfig',
+    'apps.transport.apps.TransportConfig',
+    'apps.qr_generator.apps.QrGeneratorConfig',
+    'apps.users.apps.UsersConfig',
 ]
 
 # 2. Apps compartidas (transport NO va aquí)
@@ -75,8 +75,8 @@ TENANT_APPS = [
 SHARED_APPS = [
     'jazzmin',  # ← PRIMERO para que sus templates/static tengan prioridad
     'django_tenants',
-    'organization.apps.OrganizationConfig',
-    'users.apps.UsersConfig',  # App de usuarios personalizado
+    'apps.organization.apps.OrganizationConfig',
+    'apps.users.apps.UsersConfig',  # App de usuarios personalizado
     # transport NO va aquí
     'django_recaptcha',
     'django.contrib.admin',
@@ -119,7 +119,7 @@ TENANT_DOMAIN_MODEL = "organization.Domain"
 
 MIDDLEWARE = [
     "django_tenants.middleware.main.TenantMainMiddleware",  # DEBE IR PRIMERO
-    "organization.middleware.TenantActiveMiddleware",  # Verificar si el tenant está activo
+    "apps.organization.middleware.TenantActiveMiddleware",  # Verificar si el tenant está activo
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -284,6 +284,7 @@ JAZZMIN_SETTINGS = {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
+        "users.user": "fas fa-user",
         # Icons for the interview app and its models
         "interview": "fas fa-poll",
         "interview.question": "fas fa-question",
@@ -298,7 +299,6 @@ JAZZMIN_SETTINGS = {
         "organization": "fas fa-building",
         "organization.organization": "fas fa-building",
         "organization.domain": "fas fa-globe",
-        "organization.user": "fas fa-user",
         #transport app icons
         "transport.route": "fas fa-route",
         "transport.unit": "fas fa-bus",

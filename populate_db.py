@@ -30,9 +30,9 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'buzon_quejas.settings')
 django.setup()
 
 from django_tenants.utils import schema_context
-from organization.models import Organization
-from transport.models import Route, Unit
-from interview.models import Question, QuestionOption, ComplaintReason
+from apps.organization.models import Organization
+from apps.transport.models import Route, Unit
+from apps.interview.models import Question, QuestionOption, ComplaintReason
 
 
 def print_header(message):
@@ -392,7 +392,7 @@ def main():
     print("     python manage.py shell")
     print("     >>> from django_tenants.utils import schema_context")
     print("     >>> from django.contrib.auth.models import User")
-    print("     >>> from organization.models import Organization")
+    print("     >>> from apps.organization.models import Organization")
     print("     >>> org = Organization.objects.get(schema_name='alianza')")
     print("     >>> with schema_context(org.schema_name):")
     print("     ...     User.objects.create_superuser('admin', 'admin@alianza.com', 'admin123')")

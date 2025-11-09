@@ -28,7 +28,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'buzon_quejas.settings')
 django.setup()
 
 from django.core.management import call_command
-from organization.models import Organization, Domain
+from apps.organization.models import Organization, Domain
 from django.db import connection
 
 
