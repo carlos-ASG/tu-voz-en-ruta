@@ -114,18 +114,6 @@
     opacity: 0.9;
 }
 
-.success-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-}
-
-.success-actions .btn {
-    min-width: 180px;
-}
-
 @media (max-width: 640px) {
     .success-title {
         font-size: 1.5rem;
@@ -139,14 +127,6 @@
     .success-icon svg {
         width: 36px;
         height: 36px;
-    }
-
-    .success-actions {
-        flex-direction: column;
-    }
-
-    .success-actions .btn {
-        width: 100%;
     }
 
     /* Aumentar padding general en móviles para separación de bordes */

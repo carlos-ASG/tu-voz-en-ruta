@@ -32,12 +32,13 @@ os.environ.setdefault(
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Configuración de ALLOWED_HOSTS para django-tenants
 # Permite el dominio principal y todos sus subdominios
 ALLOWED_HOSTS = [
     'localhost',
+    '.localhost',
     'tuvozenruta.com',
     '.tuvozenruta.com',
     '.up.railway.app',  # Permite subdominios en Render

@@ -474,18 +474,6 @@ textarea.form-control {
     transform: translateY(0);
 }
 
-.btn-secondary {
-    background: var(--bg-light);
-    color: var(--text-secondary);
-    border: 2px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    background: var(--bg-white);
-    border-color: var(--secondary-color);
-    color: var(--text-primary);
-}
-
 /* ========================================
    Footer del Formulario
    ======================================== */
