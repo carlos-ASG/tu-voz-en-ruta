@@ -37,6 +37,7 @@ DEBUG = False
 # Configuración de ALLOWED_HOSTS para django-tenants
 # Permite el dominio principal y todos sus subdominios
 ALLOWED_HOSTS = [
+    '127.0.0.1',
     'localhost',
     '.localhost',
     'tuvozenruta.com',
