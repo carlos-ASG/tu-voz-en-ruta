@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+import sentry_sdk
+
 
 from dotenv import load_dotenv
 
@@ -21,6 +23,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
+
+
+# Configuración de Sentry para monitoreo de errores y rendimiento
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "development")
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        # Identificar el entorno (production, staging, development)
+        environment=SENTRY_ENVIRONMENT,
+        # Add data like request headers and IP for users,
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        send_default_pii=True,
+        # Enable sending logs to Sentry
+        enable_logs=True,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for tracing.
+        # En producción considerar reducir a 0.1 (10%) para reducir costos
+        traces_sample_rate=1.0 if SENTRY_ENVIRONMENT == "development" else 0.2,
+        # Set profile_session_sample_rate to 1.0 to profile 100%
+        # of profile sessions.
+        # En producción considerar reducir a 0.1 (10%) para reducir costos
+        profiles_sample_rate=1.0 if SENTRY_ENVIRONMENT == "development" else 0.2,
+        # Integración con Django para capturar automáticamente errores
+        integrations=[
+            # Sentry SDK ya incluye integración con Django por defecto
+        ],
+    )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/

@@ -102,6 +102,8 @@ Required variables (see `.env-example`):
 - `SECRET_KEY` - Django secret key
 - `RECAPTCHA_PUBLIC_KEY` - Google reCAPTCHA public key
 - `RECAPTCHA_PRIVATE_KEY` - Google reCAPTCHA private key
+- `SENTRY_DSN` - Sentry DSN for error tracking and performance monitoring (optional)
+- `SENTRY_ENVIRONMENT` - Deployment environment (development, staging, production)
 
 ## Multi-tenant Workflow
 
@@ -136,6 +138,43 @@ Database dump location: `#file:database.sql` (mentioned in AGENTS.md)
 ## Admin Customization
 
 Uses `django-jazzmin` for enhanced admin interface with custom branding, icons, and navigation (configured extensively in `settings.py:196-337`).
+
+## Monitoring
+
+**Error Tracking & Performance:**
+
+- Uses **Sentry** for error tracking, performance monitoring, and profiling
+- Configuration in [settings.py:28-54](buzon_quejas/settings.py#L28-L54)
+- Full documentation: [MONITORING.md](MONITORING.md)
+
+**Key Features:**
+
+- Automatic error capture (exceptions, 500 errors, database errors)
+- Performance monitoring with transaction tracing
+- CPU and memory profiling
+- Multi-tenant context tagging (identify errors by tenant/organization)
+- Log integration
+
+**Quick Setup:**
+
+```bash
+# Add to .env
+SENTRY_DSN=https://your-key@sentry.io/project-id
+SENTRY_ENVIRONMENT=production
+```
+
+**Multi-tenant Context:**
+
+To identify which tenant generated an error, add Sentry tags in middleware:
+
+```python
+from sentry_sdk import set_tag, set_context
+
+set_tag("tenant_schema", request.tenant.schema_name)
+set_context("tenant", {"name": request.tenant.name})
+```
+
+See [MONITORING.md](MONITORING.md) for complete configuration, best practices, and troubleshooting.
 
 ## Important Notes
 
