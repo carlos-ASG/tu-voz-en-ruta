@@ -86,6 +86,11 @@ SHARED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.contrib.messages',
+    # Health checks - en esquema público para monitoreo general
+    'health_check',
+    'health_check.db',
+    'health_check.storage',
+    'health_check.contrib.migrations',
 ]
 
 

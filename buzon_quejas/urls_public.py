@@ -9,4 +9,7 @@ urlpatterns = [
 
     # La vista de selección de organización
     path('', include('apps.organization.urls', namespace='organization')),
+
+    # Health checks - disponibles en esquema público para monitoreo
+    path('health/', include('health_check.urls')),
 ]
