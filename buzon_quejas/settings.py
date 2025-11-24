@@ -120,7 +120,7 @@ INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in S
 # 4. Define tu modelo Tenant
 TENANT_MODEL = "organization.Organization"  # Cambiar de tenant_manager a organization
 TENANT_DOMAIN_MODEL = "organization.Domain"
-
+SHOW_PUBLIC_IF_NO_TENANT_FOUND = True
 
 
 MIDDLEWARE = [
