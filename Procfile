@@ -1,1 +1,1 @@
-web: python manage.py collectstatic && python start_db.py && gunicorn  buzon_quejas.wsgi
+web: python start_db.py && gunicorn buzon_quejas.wsgi --bind 0.0.0.0:$PORT
