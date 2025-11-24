@@ -19,9 +19,10 @@ Los siguientes módulos de health check están configurados en `settings.py` com
 ```python
 'health_check',                      # Core - funcionalidad base
 'health_check.db',                   # Verificación de base de datos
-'health_check.storage',              # Verificación de almacenamiento
 'health_check.contrib.migrations',   # Verificación de migraciones pendientes
 ```
+
+> **Nota**: La verificación de almacenamiento (`health_check.storage`) no está configurada ya que este proyecto no utiliza el sistema de almacenamiento por defecto de Django.
 
 ### URL Configurada
 
@@ -45,14 +46,12 @@ Este endpoint ejecuta **todas** las verificaciones configuradas y devuelve:
 **Ejemplo de respuesta exitosa**:
 ```
 DatabaseBackend             ... working
-DefaultFileStorageHealthCheck ... working
 MigrationsHealthCheck       ... working
 ```
 
 **Ejemplo con fallo**:
 ```
 DatabaseBackend             ... unavailable: could not connect to server
-DefaultFileStorageHealthCheck ... working
 MigrationsHealthCheck       ... working
 ```
 
@@ -65,7 +64,6 @@ Puedes verificar componentes específicos usando estos endpoints:
 | `/health/` | Todas las verificaciones |
 | `/health/?format=json` | Resultado en formato JSON |
 | `/health/db/` | Solo verificación de base de datos |
-| `/health/storage/` | Solo verificación de almacenamiento |
 | `/health/migrations/` | Solo verificación de migraciones |
 
 ### Formato JSON
@@ -80,7 +78,6 @@ curl http://localhost:8000/health/?format=json
 ```json
 {
   "DatabaseBackend": "working",
-  "DefaultFileStorageHealthCheck": "working",
   "MigrationsHealthCheck": "working"
 }
 ```
@@ -181,18 +178,6 @@ Verifica que:
 - PostgreSQL no está ejecutándose
 - Red bloqueada/firewall
 - Límite de conexiones alcanzado
-
-### Almacenamiento (`health_check.storage`)
-
-Verifica que:
-- El sistema de archivos es accesible
-- Se pueden escribir archivos temporales
-- Los permisos son correctos
-
-**Posibles problemas**:
-- Disco lleno
-- Permisos insuficientes
-- Sistema de archivos de solo lectura
 
 ### Migraciones (`health_check.contrib.migrations`)
 
@@ -296,7 +281,6 @@ HEALTH_CHECK = {
     # Plugins a ejecutar (por defecto: todos los instalados)
     'PLUGINS': [
         'health_check.db.backends.DatabaseBackend',
-        'health_check.storage.backends.DefaultFileStorageHealthCheck',
         'health_check.contrib.migrations.backends.MigrationsHealthCheck',
     ],
 }

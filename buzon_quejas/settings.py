@@ -89,7 +89,6 @@ SHARED_APPS = [
     # Health checks - en esquema público para monitoreo general
     'health_check',
     'health_check.db',
-    'health_check.storage',
     'health_check.contrib.migrations',
 ]
 
