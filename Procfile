@@ -1,1 +1,1 @@
-web: gunicorn buzon_quejas.wsgi --bind 0.0.0.0:$PORT
+web: python start_db.py && gunicorn buzon_quejas.wsgi --bind 0.0.0.0:$PORT
