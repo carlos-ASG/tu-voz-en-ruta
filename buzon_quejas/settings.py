@@ -63,8 +63,8 @@ os.environ.setdefault(
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# if os.getenv("DEBUG", "False").lower() == "true" else False
-DEBUG = True 
+
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
 # Configuración de ALLOWED_HOSTS para django-tenants
 # Permite el dominio principal y todos sus subdominios
