@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Tu vizççoz en ruta - Buzón de Quejas{% endblock %}</title>
+    <title>{% block title %}Tu voz en ruta - Buzón de Quejas{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'organization/css/base.css' %}">
     <link rel="stylesheet" href="{% static 'organization/css/form_style.css' %}">
     {% block extra_css %}{% endblock %}
@@ -15,6 +15,17 @@
             <h1>{% block header_title %}Tu voz en ruta{% endblock %}</h1>
             <p class="subtitle">{% block header_subtitle %}Tu opinión es importante para mejorar nuestro servicio{% endblock %}</p>
         </header>
+
+        <!-- Mensajes del sistema -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="message message-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
         {% block content %}
         <!-- El contenido específico de cada página va aquí -->

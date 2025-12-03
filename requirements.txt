@@ -5,7 +5,9 @@ dj-database-url==3.0.1
 Django==5.2.7
 django-health-check==3.20.0
 django-jazzmin==3.0.1
+django-ratelimit==4.1.0
 django-recaptcha==4.1.0
+django-redis==6.0.0
 django-tenants==3.9.0
 gunicorn==23.0.0
 h11==0.16.0
@@ -15,6 +17,7 @@ psycopg2-binary==2.9.11
 python-dotenv==1.2.1
 pytz==2025.2
 qrcode==8.2
+redis==7.1.0
 sentry-sdk==2.45.0
 sqlparse==0.5.3
 urllib3==2.5.0

@@ -63,7 +63,8 @@ os.environ.setdefault(
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# if os.getenv("DEBUG", "False").lower() == "true" else False
+DEBUG = True 
 
 # Configuración de ALLOWED_HOSTS para django-tenants
 # Permite el dominio principal y todos sus subdominios
@@ -213,6 +214,40 @@ DATABASES = {
 DATABASE_ROUTERS = (
     'django_tenants.routers.TenantSyncRouter',
 )
+
+# Cache Configuration (Redis)
+# https://docs.djangoproject.com/en/4.2/topics/cache/
+
+# Configuración de Redis desde variables de entorno
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/1')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            # Configuración de conexión
+            'SOCKET_CONNECT_TIMEOUT': 5,  # segundos
+            'SOCKET_TIMEOUT': 5,  # segundos
+            # Compresión de datos (reduce uso de memoria)
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            # Pool de conexiones
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 50,
+                'retry_on_timeout': True,
+            },
+        },
+        'KEY_PREFIX': 'buzon_quejas',  # Prefijo para todas las claves
+        'TIMEOUT': 300,  # Tiempo de expiración por defecto (5 minutos)
+    }
+}
+
+# Rate Limiting Configuration (django-ratelimit)
+# django-ratelimit usa automáticamente el cache 'default' configurado arriba
+# Esto permite controlar el número de peticiones por IP/usuario en un tiempo determinado
+RATELIMIT_ENABLE = True  # Habilitar rate limiting
+RATELIMIT_USE_CACHE = 'default'  # Usar cache de Redis para almacenar contadores
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

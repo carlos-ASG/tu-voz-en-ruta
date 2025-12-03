@@ -1,12 +1,32 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django_ratelimit.decorators import ratelimit
 
 from apps.transport.models import Unit
 from .models import Question, ComplaintReason, SurveySubmission, Answer, Complaint
 from .forms.complaint_form import ComplaintForm
 from .forms.select_unit_form import SelectUnitForm
 from .forms.survery_form import SurveyForm
+
+
+def get_ratelimit_key_ip_and_unit(group, request):
+    """
+    Función personalizada para generar la clave de rate limiting.
+    Combina la IP del usuario con el ID de la unidad para permitir
+    que un mismo usuario envíe encuestas a diferentes unidades.
+
+    Retorna: 'ip:unit_id' (ej: '192.168.1.1:uuid-de-unidad')
+    """
+    # Obtener la IP del usuario (considerando proxies)
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or \
+         request.META.get('REMOTE_ADDR', '')
+
+    # Obtener el ID de la unidad desde POST
+    unit_pk = request.POST.get('unit', 'unknown')
+
+    # Combinar IP + unit_pk para crear una clave única
+    return f"{ip}:{unit_pk}"
 
 
 def survey_form(request):
@@ -35,13 +55,37 @@ def survey_form(request):
     return render(request, 'interview/form_section.html', context)
 
 
+@ratelimit(key=get_ratelimit_key_ip_and_unit, rate='1/15m', method='POST', block=False)
 def submit_survey(request):
     """
     Vista para procesar el envío de la encuesta.
     Valida y procesa los tres formularios: unidad, encuesta y quejas.
     El aislamiento por organización es automático gracias al schema del tenant (django-tenants).
+
+    Rate Limiting: 1 petición por combinación de IP + unidad cada 15 minutos.
+    Esto permite que un usuario envíe encuestas a diferentes unidades sin restricción,
+    pero evita spam múltiple a la misma unidad.
     """
     if request.method != 'POST':
+        return redirect('interview:survey_form')
+
+    # Verificar si se excedió el límite de peticiones
+    if getattr(request, 'limited', False):
+        # Intentar obtener el número de tránsito de la unidad para un mensaje más descriptivo
+        unit_pk = request.POST.get('unit')
+        unit_info = ''
+        if unit_pk:
+            try:
+                unit = Unit.objects.get(pk=unit_pk)
+                unit_info = f' para la unidad {unit.transit_number}'
+            except Unit.DoesNotExist:
+                pass
+
+        messages.error(
+            request,
+            f'Has enviado una encuesta{unit_info} recientemente. '
+            'Por favor espera 15 minutos antes de enviar otra para esta unidad.'
+        )
         return redirect('interview:survey_form')
     
     # ✅ Obtener el UUID de la unidad desde POST
