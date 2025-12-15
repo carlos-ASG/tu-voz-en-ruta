@@ -25,8 +25,9 @@ This is a multi-tenant Django application for public transport complaint and sur
 - `organization/` - **SHARED_APPS**: Multi-tenant models (Organization, Domain), organization selection views
 - `interview/` - **TENANT_APPS**: Survey/complaint system with Question, Answer, SurveySubmission, Complaint models (split across multiple files in models/)
 - `transport/` - **TENANT_APPS**: Route and Unit (vehicle) models, custom tenant admin site
-- `statistical_summary/` - **TENANT_APPS**: Statistical dashboards and reports
+- `statistical_summary/` - **TENANT_APPS**: Statistical dashboards, reports, and aggregated statistics generation
 - `qr_generator/` - **TENANT_APPS**: QR code generation for surveys/units
+- `users/` - **TENANT_APPS**: Custom user management per tenant
 
 **Database Models:**
 - Organization models are in `organization/models.py` (single file)
@@ -82,11 +83,26 @@ python manage.py runserver
 # Django system checks
 python manage.py check
 
-# Run tests
+# Run all tests
 python manage.py test
+
+# Run tests for specific app
+python manage.py test apps.interview
+
+# Run specific test class
+python manage.py test apps.interview.tests.TestSurveyForm
 
 # Collect static files
 python manage.py collectstatic --no-input
+```
+
+**Management Commands:**
+```bash
+# Generate aggregated reports (statistical_summary app)
+python manage.py generar_reportes_agregados
+
+# Check health status
+curl http://localhost:8000/health/
 ```
 
 **Production Build (Railway/Render):**
@@ -102,8 +118,10 @@ Required variables (see `.env-example`):
 - `SECRET_KEY` - Django secret key
 - `RECAPTCHA_PUBLIC_KEY` - Google reCAPTCHA public key
 - `RECAPTCHA_PRIVATE_KEY` - Google reCAPTCHA private key
+- `REDIS_URL` - Redis connection for rate limiting (default: `redis://localhost:6379/0`)
 - `SENTRY_DSN` - Sentry DSN for error tracking and performance monitoring (optional)
 - `SENTRY_ENVIRONMENT` - Deployment environment (development, staging, production)
+- `DEBUG` - Enable debug mode (default: `False`, set to `True` for development)
 
 ## Multi-tenant Workflow
 
@@ -111,6 +129,56 @@ Required variables (see `.env-example`):
 2. **Add Domain**: Create Domain pointing to the organization (e.g., `cliente1.tuvozenruta.com`)
 3. **Automatic Schema Creation**: Schema is auto-created due to `auto_create_schema = True` in Organization model
 4. **Access Tenant**: Navigate to tenant domain to access tenant-specific admin and features
+
+## Survey Form Access
+
+**URL Pattern:**
+
+Each unit has its own dedicated survey form URL:
+
+```text
+/survey/<transit_number>/
+```
+
+**Example:**
+
+```text
+https://cliente1.tuvozenruta.com/survey/ABC123/
+```
+
+**Key Features:**
+
+- Each unit is accessed via its unique `transit_number` in the URL path
+- Designed for QR code integration - each QR contains the unit-specific URL
+- General unit selector available at `/survey/` (from admin panel or organization selection)
+- Auto-redirects to first unit if only one exists, or shows selector for multiple units
+- Returns 404 if the unit doesn't exist
+
+**URL Structure:**
+
+- Unit selection: `/survey/` (auto-redirects if only 1 unit, or shows selector)
+- Survey form: `/survey/<transit_number>/`
+- Form submission: `/survey/<transit_number>/submit/`
+- Thank you page: `/survey/thank-you/`
+
+**Implementation:**
+
+- URLs: [apps/interview/urls.py](apps/interview/urls.py)
+- Unit selector view: [apps/interview/views.py:13](apps/interview/views.py#L13) - `select_unit_for_survey()`
+- Survey form view: [apps/interview/views.py:73](apps/interview/views.py#L73) - `survey_form(transit_number)`
+- Submit view: [apps/interview/views.py:107](apps/interview/views.py#L107) - `submit_survey(transit_number)`
+- Templates:
+  - [apps/interview/templates/interview/select_unit.html](apps/interview/templates/interview/select_unit.html) - Unit selector
+  - [apps/interview/templates/interview/no_units.html](apps/interview/templates/interview/no_units.html) - No units available
+  - [apps/interview/templates/interview/form_section.html](apps/interview/templates/interview/form_section.html) - Survey form
+- Form: [apps/interview/forms/select_unit_form.py](apps/interview/forms/select_unit_form.py) - `SelectUnitForm`
+
+**Form Structure:**
+
+1. **Section 1**: Unit information display (read-only, shows transit_number, route, internal_number)
+2. **Section 2**: Dynamic survey questions (ratings, text, choice, multi-choice)
+3. **Section 3**: Optional complaint with reason and text
+4. **reCAPTCHA**: Spam protection
 
 ## Key Conventions (from AGENTS.md)
 
@@ -175,6 +243,60 @@ set_context("tenant", {"name": request.tenant.name})
 ```
 
 See [MONITORING.md](MONITORING.md) for complete configuration, best practices, and troubleshooting.
+
+## Health Checks
+
+**System Health Monitoring:**
+
+- Uses **django-health-check** to provide health check endpoints
+- Configured in public schema (accessible without tenant)
+- Full documentation: [HEALTH_CHECKS.md](HEALTH_CHECKS.md)
+
+**Available Checks:**
+
+- Database connectivity (`health_check.db`)
+- Pending migrations (`health_check.contrib.migrations`)
+
+**Endpoints:**
+
+```bash
+# Check all health endpoints
+curl http://localhost:8000/health/
+
+# Get JSON response
+curl http://localhost:8000/health/?format=json
+
+# Check specific component
+curl http://localhost:8000/health/db/
+curl http://localhost:8000/health/migrations/
+```
+
+See [HEALTH_CHECKS.md](HEALTH_CHECKS.md) for Docker healthchecks, Kubernetes probes, and monitoring integration.
+
+## Rate Limiting
+
+**Survey Submission Protection:**
+
+- Uses **django-ratelimit** with Redis backend
+- Configured in [interview/views.py:107](apps/interview/views.py#L107) - `submit_survey()` function
+- Rate limit: 1 submission per IP+Unit combination every 15 minutes
+- Custom key function: `get_ratelimit_key_ip_and_unit` combines IP and unit ID
+
+**Configuration:**
+
+```python
+@ratelimit(key=get_ratelimit_key_ip_and_unit, rate='1/15m', method='POST', block=False)
+def submit_survey(request):
+    if getattr(request, 'limited', False):
+        # Handle rate limit exceeded
+```
+
+**Required Environment Variable:**
+
+```bash
+# Redis connection for rate limiting
+REDIS_URL=redis://localhost:6379/0
+```
 
 ## Important Notes
 

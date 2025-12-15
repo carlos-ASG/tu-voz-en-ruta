@@ -1,0 +1,193 @@
+{% extends 'organization/base.html' %}
+{% load static %}
+
+{% block title %}Seleccionar Unidad - Encuesta de Satisfacción{% endblock %}
+
+{% block header_title %}Encuesta de Satisfacción{% endblock %}
+{% block header_subtitle %}Selecciona la unidad para evaluar{% endblock %}
+
+{% block extra_css %}
+<style>
+    .select-unit-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .unit-selector-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .form-description {
+        color: #666;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .unit-select {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        background: white;
+        color: #333;
+        cursor: pointer;
+        transition: border-color 0.3s;
+    }
+
+    .unit-select:hover {
+        border-color: #007bff;
+    }
+
+    .unit-select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .unit-option {
+        padding: 0.5rem;
+    }
+
+    .submit-button {
+        width: 100%;
+        padding: 0.875rem;
+        margin-top: 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        background: #007bff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .submit-button:hover {
+        background: #0056b3;
+    }
+
+    .submit-button:active {
+        transform: translateY(1px);
+    }
+
+    .unit-count-badge {
+        display: inline-block;
+        background: #e7f3ff;
+        color: #007bff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .admin-link-container {
+        text-align: center;
+        margin-top: 2rem;
+        padding: 1rem 0;
+    }
+
+    .admin-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        color: #6c757d;
+        text-decoration: none;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .admin-link:hover {
+        color: #495057;
+        border-color: #adb5bd;
+        background: #f8f9fa;
+    }
+
+    .admin-icon {
+        width: 18px;
+        height: 18px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="form-section">
+    <div class="select-unit-container">
+        <div class="unit-selector-form">
+            <h2 class="form-title">Selecciona una Unidad</h2>
+
+            <div style="text-align: center;">
+                <span class="unit-count-badge">{{ unit_count }} unidad{% if unit_count > 1 %}es{% endif %} disponible{% if unit_count > 1 %}s{% endif %}</span>
+            </div>
+
+            <p class="form-description">
+                Por favor selecciona la unidad que deseas evaluar. La información se mostrará en el formulario.
+            </p>
+
+            <form method="post" action="">
+                {% csrf_token %}
+
+                <select name="unit_transit_number" id="unit_select" class="unit-select" required>
+                    <option value="">-- Selecciona una unidad --</option>
+                    {% for unit in units %}
+                    <option value="{{ unit.transit_number }}" class="unit-option">
+                        {{ unit.transit_number }}
+                        {% if unit.internal_number %} - Unidad #{{ unit.internal_number }}{% endif %}
+                        {% if unit.route %} - {{ unit.route.name }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="submit-button">Continuar a la Encuesta</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<p class="admin-link-container">
+    <a href="{% url 'admin:index' %}" class="admin-link" title="Panel de Administración">
+        <svg class="admin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+    </a>
+</p>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus en el selector al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectElement = document.getElementById('unit_select');
+        if (selectElement) {
+            selectElement.focus();
+        }
+    });
+
+    // Mejorar la experiencia de usuario con auto-submit opcional
+    // (comentado por defecto, descomentar si deseas submit automático al seleccionar)
+    /*
+    document.getElementById('unit_select').addEventListener('change', function() {
+        if (this.value) {
+            // Auto-submit cuando se selecciona una unidad
+            this.form.submit();
+        }
+    });
+    */
+</script>
+{% endblock %}

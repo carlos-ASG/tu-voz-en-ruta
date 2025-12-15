@@ -1,0 +1,143 @@
+{% extends 'organization/base.html' %}
+{% load static %}
+
+{% block title %}Sin Unidades Disponibles - Encuesta de Satisfacción{% endblock %}
+
+{% block header_title %}Encuesta de Satisfacción{% endblock %}
+{% block header_subtitle %}No hay unidades disponibles{% endblock %}
+
+{% block extra_css %}
+<style>
+    .no-units-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .no-units-box {
+        background: white;
+        padding: 3rem 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        color: #ffc107;
+    }
+
+    .no-units-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .no-units-message {
+        color: #666;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-info {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 6px;
+        border-left: 4px solid #ffc107;
+        margin-top: 2rem;
+        text-align: left;
+    }
+
+    .contact-info p {
+        margin: 0.5rem 0;
+        color: #555;
+    }
+
+    .contact-info strong {
+        color: #333;
+    }
+
+    .admin-link-container {
+        text-align: center;
+        margin-top: 2rem;
+        padding: 1rem 0;
+    }
+
+    .admin-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        color: #6c757d;
+        text-decoration: none;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .admin-link:hover {
+        color: #495057;
+        border-color: #adb5bd;
+        background: #f8f9fa;
+    }
+
+    .admin-icon {
+        width: 18px;
+        height: 18px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="form-section">
+    <div class="no-units-container">
+        <div class="no-units-box">
+            <!-- Ícono de información -->
+            <div class="info-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </div>
+
+            <!-- Mensaje principal -->
+            <h2 class="no-units-title">No hay unidades disponibles</h2>
+
+            <div class="no-units-message">
+                <p>Actualmente no hay unidades registradas en el sistema para realizar la encuesta.</p>
+                <p>Por favor, contacta al administrador para más información.</p>
+            </div>
+
+            <!-- Información de contacto (opcional) -->
+            <div class="contact-info">
+                <p><strong>¿Necesitas ayuda?</strong></p>
+                <p>Si crees que esto es un error, por favor contacta al administrador del sistema.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<p class="admin-link-container">
+    <a href="{% url 'admin:index' %}" class="admin-link" title="Panel de Administración">
+        <svg class="admin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+    </a>
+</p>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-scroll al inicio de la página al cargar
+    document.addEventListener('DOMContentLoaded', function() {
+        window.scrollTo(0, 0);
+    });
+</script>
+{% endblock %}

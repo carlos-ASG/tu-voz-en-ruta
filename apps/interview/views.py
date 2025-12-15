@@ -1,13 +1,54 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django_ratelimit.decorators import ratelimit
+from django_ratelimit.core import is_ratelimited
 
 from apps.transport.models import Unit
 from .models import Question, ComplaintReason, SurveySubmission, Answer, Complaint
 from .forms.complaint_form import ComplaintForm
 from .forms.select_unit_form import SelectUnitForm
 from .forms.survery_form import SurveyForm
+
+
+def select_unit_for_survey(request):
+    """
+    Vista intermedia para seleccionar una unidad antes de mostrar la encuesta.
+
+    Comportamiento:
+    - Si hay solo 1 unidad: redirije automáticamente a su encuesta
+    - Si hay múltiples unidades: muestra un selector
+    - Si no hay unidades: muestra mensaje de error
+    """
+    # Obtener todas las unidades disponibles (automáticamente filtradas por tenant)
+    units = Unit.objects.all().order_by('transit_number')
+    unit_count = units.count()
+
+    # Caso 1: No hay unidades disponibles
+    if unit_count == 0:
+        messages.warning(request, 'No hay unidades disponibles en este momento.')
+        return render(request, 'interview/no_units.html')
+
+    # Caso 2: Solo hay una unidad - redirigir automáticamente
+    if unit_count == 1:
+        first_unit = units.first()
+        return redirect('interview:survey_form', transit_number=first_unit.transit_number)
+
+    # Caso 3: Hay múltiples unidades - procesar selección
+    if request.method == 'POST':
+        selected_transit_number = request.POST.get('unit_transit_number')
+        if selected_transit_number:
+            # Verificar que la unidad existe
+            if units.filter(transit_number=selected_transit_number).exists():
+                return redirect('interview:survey_form', transit_number=selected_transit_number)
+            else:
+                messages.error(request, 'La unidad seleccionada no existe.')
+
+    # Mostrar selector de unidades
+    context = {
+        'units': units,
+        'unit_count': unit_count,
+    }
+    return render(request, 'interview/select_unit.html', context)
 
 
 def get_ratelimit_key_ip_and_unit(group, request):
@@ -29,98 +70,107 @@ def get_ratelimit_key_ip_and_unit(group, request):
     return f"{ip}:{unit_pk}"
 
 
-def survey_form(request):
+def survey_form(request, transit_number):
     """
     Vista para mostrar el formulario de encuesta con preguntas dinámicas.
     Maneja tres formularios separados: selección de unidad, preguntas de encuesta y quejas.
-    
-    Query params:
-        transit_number: Número de tránsito de la unidad (opcional)
+
+    Args:
+        transit_number (str): Número de tránsito de la unidad (requerido en la URL)
     """
-    # ✅ Cambiar de unit_id a transit_number
-    transit_number = request.GET.get('transit_number', None)
-    
+    # Validar que la unidad existe
+    try:
+        unit = Unit.objects.get(transit_number=transit_number)
+    except Unit.DoesNotExist:
+        messages.error(request, f'La unidad con número de tránsito "{transit_number}" no existe.')
+        # Redirigir a una página de error o inicio
+        from django.http import Http404
+        raise Http404(f'Unidad {transit_number} no encontrada')
+
     # Inicializar los tres formularios
+    # El transit_number ya está validado, así que pasamos el objeto unit directamente
     unit_form = SelectUnitForm(transit_number=transit_number, data=request.POST or None)
     survey_form_obj = SurveyForm(data=request.POST or None)
     complaint_form = ComplaintForm(data=request.POST or None)
-    
+
     context = {
-        'transit_number': transit_number,  # ✅ Cambiar nombre de variable
+        'transit_number': transit_number,
+        'unit': unit,  # Agregar el objeto unit al contexto
         'unit_form': unit_form,
         'survey_form': survey_form_obj,
         'complaint_form': complaint_form,
     }
-    
+
     return render(request, 'interview/form_section.html', context)
 
 
-@ratelimit(key=get_ratelimit_key_ip_and_unit, rate='1/15m', method='POST', block=False)
-def submit_survey(request):
+def submit_survey(request, transit_number):
     """
     Vista para procesar el envío de la encuesta.
     Valida y procesa los tres formularios: unidad, encuesta y quejas.
     El aislamiento por organización es automático gracias al schema del tenant (django-tenants).
 
+    Args:
+        transit_number (str): Número de tránsito de la unidad (requerido en la URL)
+
     Rate Limiting: 1 petición por combinación de IP + unidad cada 15 minutos.
     Esto permite que un usuario envíe encuestas a diferentes unidades sin restricción,
     pero evita spam múltiple a la misma unidad.
+    IMPORTANTE: El rate limit solo se incrementa DESPUÉS de validar los formularios,
+    para evitar bloquear usuarios que cometen errores (ej: no completar reCAPTCHA).
     """
     if request.method != 'POST':
-        return redirect('interview:survey_form')
+        return redirect('interview:survey_form', transit_number=transit_number)
 
-    # Verificar si se excedió el límite de peticiones
-    if getattr(request, 'limited', False):
-        # Intentar obtener el número de tránsito de la unidad para un mensaje más descriptivo
-        unit_pk = request.POST.get('unit')
-        unit_info = ''
-        if unit_pk:
-            try:
-                unit = Unit.objects.get(pk=unit_pk)
-                unit_info = f' para la unidad {unit.transit_number}'
-            except Unit.DoesNotExist:
-                pass
+    # Validar que la unidad existe (buscar por transit_number)
+    unit = get_object_or_404(Unit, transit_number=transit_number)
 
-        messages.error(
-            request,
-            f'Has enviado una encuesta{unit_info} recientemente. '
-            'Por favor espera 15 minutos antes de enviar otra para esta unidad.'
-        )
-        return redirect('interview:survey_form')
-    
-    # ✅ Obtener el UUID de la unidad desde POST
-    # El formulario envía el campo 'unit' con el pk (UUID) de la unidad
-    unit_pk = request.POST.get('unit')
-    
-    if not unit_pk:
-        messages.error(request, 'Debes seleccionar una unidad para continuar.')
-        return redirect('interview:survey_form')
-    
-    # Validar que la unidad existe (buscar por pk UUID)
-    unit = get_object_or_404(Unit, pk=unit_pk)
-    
     # Inicializar los tres formularios con los datos POST
     # Pasar transit_number para que el formulario sepa que ya hay una unidad seleccionada
     unit_form = SelectUnitForm(transit_number=unit.transit_number, data=request.POST)
     survey_form = SurveyForm(data=request.POST)
     complaint_form = ComplaintForm(data=request.POST)
-    
-    # Validar todos los formularios
+
+    # Validar todos los formularios (incluyendo reCAPTCHA)
     unit_valid = unit_form.is_valid()
     survey_valid = survey_form.is_valid()
     complaint_valid = complaint_form.is_valid()
-    
+
     if not (unit_valid and survey_valid and complaint_valid):
-        # Si algún formulario no es válido, mostrar errores
+        # Si algún formulario no es válido (incluyendo reCAPTCHA),
+        # NO incrementar el rate limit y mostrar errores
         messages.error(request, 'Por favor corrige los errores en el formulario.')
-        
+
         context = {
-            'transit_number': unit.transit_number,  # ✅ Cambiar nombre
+            'transit_number': unit.transit_number,
+            'unit': unit,
             'unit_form': unit_form,
             'survey_form': survey_form,
             'complaint_form': complaint_form,
         }
         return render(request, 'interview/form_section.html', context)
+
+    # ============================================
+    # FORMULARIOS VÁLIDOS - VERIFICAR RATE LIMIT
+    # ============================================
+    # Solo verificar e incrementar el rate limit DESPUÉS de que los formularios sean válidos
+    limited = is_ratelimited(
+        request=request,
+        group='submit_survey',
+        fn=None,
+        key=get_ratelimit_key_ip_and_unit,
+        rate='1/15m',
+        method='POST',
+        increment=True  # Incrementar el contador SOLO si está válido
+    )
+
+    if limited:
+        messages.error(
+            request,
+            f'Has enviado una encuesta para la unidad {unit.transit_number} recientemente. '
+            'Por favor espera 15 minutos antes de enviar otra para esta unidad.'
+        )
+        return redirect('interview:survey_form', transit_number=transit_number)
     
     # ============================================
     # TODOS LOS FORMULARIOS SON VÁLIDOS
@@ -206,9 +256,10 @@ def submit_survey(request):
     except Exception as e:
         messages.error(request, f'Ocurrió un error al procesar la encuesta: {str(e)}')
         print(f'Error en submit_survey: {e}')
-        
+
         context = {
-            'transit_number': unit.transit_number,  # ✅ Cambiar nombre
+            'transit_number': unit.transit_number,
+            'unit': unit,
             'unit_form': unit_form,
             'survey_form': survey_form,
             'complaint_form': complaint_form,

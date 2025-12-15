@@ -310,7 +310,7 @@ JAZZMIN_SETTINGS = {
         #{"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
         # Link directo al dashboard de estadísticas
         # Link directo al sitio público / aplicación (vista que muestra selección de unidad)
-        {"name": "Ver encuesta", "url": "interview:survey_form", "new_window": True},
+        {"name": "Ver encuesta", "url": "interview:select_unit", "new_window": True},
         # model admin to link to (Permissions checked against model)
         #{"model": "auth.User"},
         # App with dropdown menu to all its models pages (Permissions checked against models)

@@ -1,9 +1,9 @@
 import http
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 
 from apps.organization.forms.select_organization_form import SelectOrganizationForm
-from apps.organization.models import Organization, Domain
+from apps.organization.models import Domain
 from apps.organization.utils import build_tenant_url
 
 
@@ -28,11 +28,12 @@ def select_organization(request):
         try:
             # Buscar el dominio primario de la organización
             domain = Domain.objects.get(tenant=organization, is_primary=True)
-            
+
             # Construir la URL completa con el esquema y el dominio del tenant
+            # Redirigir a la vista de selección de unidad para mostrar la encuesta
             scheme = 'https' if request.is_secure() else 'http'
             port = request.get_port()
-            tenant_url = build_tenant_url(scheme, domain.domain, port=port, path='/interview')
+            tenant_url = build_tenant_url(scheme, domain.domain, port=port, path='/survey')
 
             # Redirigir al subdominio del tenant
             return HttpResponseRedirect(tenant_url)

@@ -113,8 +113,8 @@ def generate_qr_image(unit, tenant):
         PIL.Image: Imagen del código QR con encabezado
     """
     # Construir la URL completa para la encuesta de esta unidad
-    # Formato: http://alianza.tuvozenruta.com/interview/?transit_number=ABC123
-    url = f"http://{tenant}.tuvozenruta.com/interview/?transit_number={unit.transit_number}"
+    # Formato: http://alianza.tuvozenruta.com/survey/ABC123/
+    url = f"http://{tenant}.tuvozenruta.com/survey/{unit.transit_number}/"
 
     # Crear el código QR
     qr = qrcode.QRCode(

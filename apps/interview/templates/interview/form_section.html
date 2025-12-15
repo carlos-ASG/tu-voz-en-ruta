@@ -4,39 +4,25 @@
 {% block title %}Encuesta de Satisfacción{% endblock %}
 
 {% block content %}
-<form method="post" action="{% url 'interview:submit_survey' %}" class="survey-form" id="surveyForm">
+<form method="post" action="{% url 'interview:submit_survey' transit_number=transit_number %}" class="survey-form" id="surveyForm">
     {% csrf_token %}
-    
-    <!-- SECCIÓN 0: Selección de Unidad -->
+
+    <!-- SECCIÓN 0: Información de Unidad -->
     <section class="form-section unit-info-section">
         <h2 class="section-title">
             <span class="section-number">1</span>
-            Selección de Unidad
+            Información de la Unidad
         </h2>
-        
-        {% if transit_number %}
-        <!-- Si ya hay transit_number, mostrar info de la unidad con campo hidden -->
+
+        <!-- Campo hidden con la unidad pre-seleccionada -->
         <div class="unit-info-box">
             {{ unit_form.unit }}
-            
-            {% if unit_form.unit.value %}
-                <p><strong>Unidad seleccionada:</strong> {{ unit_form.unit.field.queryset.first.transit_number }}</p>
-                {% if unit_form.unit.field.queryset.first.route %}
-                <p><strong>Ruta:</strong> {{ unit_form.unit.field.queryset.first.route.name }}</p>
-                {% endif %}
+
+            <p><strong>Unidad:</strong> {{ unit.transit_number }}</p>
+            {% if unit.route %}
+            <p><strong>Ruta:</strong> {{ unit.route.name }}</p>
             {% endif %}
         </div>
-        {% else %}
-        <!-- Si no hay transit_number, mostrar selector -->
-        <div class="form-group">
-            {{ unit_form.unit.errors }}
-            {{ unit_form.unit.label_tag }}
-            {{ unit_form.unit }}
-            {% if unit_form.unit.help_text %}
-            <small class="help-text">{{ unit_form.unit.help_text }}</small>
-            {% endif %}
-        </div>
-        {% endif %}
     </section>
 
     <!-- SECCIÓN 1: Preguntas de la Encuesta -->
