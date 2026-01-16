@@ -1,20 +1,25 @@
 from calendar import c
 from django.shortcuts import render
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import TemplateView
 import json
 
 from apps.statistical_summary.utils import calculate_statistics, get_units_and_routes
 
-class DashboardView(LoginRequiredMixin, TemplateView):
-    template_name = "statistical_summary/statistics_dashboard.html" # Tu template de gráficas
+class DashboardView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     """
     Vista de dashboard de estadísticas personalizada.
-    
+
+    Requiere:
+    - Usuario autenticado (LoginRequiredMixin)
+    - Permiso 'can_view_statistical_dashboard' (PermissionRequiredMixin)
+
     Filtros aplicados:
     1. Organización del usuario autenticado (CRÍTICO)
     2. Período de fechas (hoy, semana, mes, año, todo)
     """
+    template_name = "statistical_summary/statistics_dashboard.html"
+    permission_required = 'statistical_summary.can_view_statistical_dashboard'
     
     # FILTRO CRÍTICO: Obtener organización desde el tenant actual
     def get_context_data(self, **kwargs):

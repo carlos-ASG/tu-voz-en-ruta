@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, permission_required
 from io import BytesIO
 import zipfile
 import qrcode
@@ -10,10 +11,16 @@ from PIL import Image, ImageDraw, ImageFont
 from .forms import QRGeneratorForm
 
 
+@login_required
+@permission_required('qr_generator.can_generate_qr_codes', raise_exception=True)
 def qr_generator_view(request):
     """
     Vista principal del generador de códigos QR.
     Muestra el formulario de selección de unidades.
+
+    Requiere:
+    - Usuario autenticado (@login_required)
+    - Permiso 'can_generate_qr_codes' (@permission_required)
     """
     form = QRGeneratorForm()
     
@@ -25,11 +32,17 @@ def qr_generator_view(request):
     return render(request, 'qr_generator/qr_generator_template.html', context)
 
 
+@login_required
+@permission_required('qr_generator.can_generate_qr_codes', raise_exception=True)
 def generate_qr_codes(request):
     """
     Genera códigos QR para las unidades seleccionadas.
     Si es una unidad: retorna la imagen QR directamente.
     Si son múltiples: retorna un archivo ZIP con todos los QR.
+
+    Requiere:
+    - Usuario autenticado (@login_required)
+    - Permiso 'can_generate_qr_codes' (@permission_required)
     """
     if request.method != 'POST':
         return redirect('qr_generator:qr_generator')

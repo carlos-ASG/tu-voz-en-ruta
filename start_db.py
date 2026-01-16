@@ -57,13 +57,34 @@ def print_info(message):
 def run_shared_migrations():
     """Ejecuta las migraciones del esquema compartido (público)."""
     print_header("Paso 1: Ejecutando migraciones del esquema compartido")
-    
+
     try:
         call_command('migrate_schemas', '--shared', verbosity=2)
         print_success("Migraciones del esquema público completadas")
         return True
     except Exception as e:
         print_error(f"Error al ejecutar migraciones compartidas: {e}")
+        return False
+
+
+def run_tenant_migrations():
+    """Ejecuta las migraciones de todos los tenants existentes."""
+    print_header("Paso 3: Ejecutando migraciones de tenants")
+
+    try:
+        # Contar tenants existentes (excluyendo el público)
+        tenant_count = Organization.objects.exclude(schema_name='public').count()
+
+        if tenant_count == 0:
+            print_info("No hay tenants adicionales para migrar (solo existe el público)")
+            return True
+
+        print_info(f"Se encontraron {tenant_count} tenant(s) adicional(es) para migrar")
+        call_command('migrate_schemas', verbosity=2)
+        print_success("Migraciones de tenants completadas")
+        return True
+    except Exception as e:
+        print_error(f"Error al ejecutar migraciones de tenants: {e}")
         return False
 
 
@@ -124,7 +145,7 @@ def create_public_tenant():
 
 def verify_installation():
     """Verifica que la instalación sea correcta."""
-    print_header("Paso 3: Verificando instalación")
+    print_header("Paso 4: Verificando instalación")
     
     try:
         # Verificar organización pública
@@ -162,16 +183,18 @@ def verify_installation():
 def main():
     """Función principal del script."""
     print_header("🚀 Inicialización de Base de Datos - Django Tenants")
-    
+
     print_info("Este script inicializará la base de datos con:")
     print_info("  1. Esquema compartido (público)")
     print_info("  2. Organización pública con dominios")
+    print_info("  3. Migraciones de tenants existentes")
     print()
-    
+
     # Ejecutar pasos
     steps = [
         ("Migraciones compartidas", run_shared_migrations),
         ("Creación de tenant público", create_public_tenant),
+        ("Migraciones de tenants", run_tenant_migrations),
         ("Verificación", verify_installation),
     ]
     
