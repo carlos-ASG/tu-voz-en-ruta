@@ -1,125 +1,353 @@
+# CLAUDE.md
 
-# Convenciones para agentes de IA que contribuyen a este proyecto Django
-
-Este documento recoge las normas y convenciones que cualquier agente (humano o IA) debe seguir al desarrollar, editar o revisar código y documentación en este proyecto Django.
-
-IMPORTANTE: la base de datos del proyecto se encuentra en el archivo indicado en el contexto del repositorio: #file:database.sql
-
-## Objetivo
-
-Garantizar cambios consistentes, seguros y fáciles de revisar. Los agentes deben priorizar la calidad del código, la seguridad y la reproducibilidad.
-
-## Contrato mínimo de un cambio
-
-- Inputs: descripción del cambio, archivos modificados, motivos, datos de prueba (si aplica).
-- Outputs esperados: cambios en el repositorio con mensajes de commit claros, pruebas (si aplica) y pasos para reproducir.
-- Modos de error: validar precondiciones (migraciones pendientes, dependencias no instaladas, variables de entorno faltantes) y documentar cualquier fallo conocido.
-
-## Normas generales
-
-- Lenguaje: escribe los comentarios y la documentación en español preferiblemente.
-- Pequeños cambios: mantener los commits atómicos (cada commit debe representar una única intención o reparación).
-- Mensajes de commit: escritos en español, en tiempo imperativo breve, y con referencia a la tarea/issue si existe. Ejemplo: "Arregla validación de correo en formulario de quejas".
-- No incluir secretos: nunca escribir contraseñas, tokens u otros secretos en el código o en los commits. Si necesitas credenciales de prueba, usa valores ficticios y documenta su uso.
-
-## Estructura de los cambios
-
-- Código: seguir las convenciones de estilo del proyecto (si no hay linter configurado, aplicar las convenciones de PEP8 para Python/Django).
-- Tests: los cambios funcionales importantes deben acompañarse de tests unitarios o de integración mínimos que cubran el nuevo comportamiento.
-- Migraciones: si se modifica el modelo, incluye la migración Django generada y explica su propósito.
-- Documentación: actualizar o añadir documentación que explique la nueva funcionalidad o la corrección.
-
-## Revisión de seguridad y privacidad
-
-- Validar entradas: todo dato de entrada desde usuarios debe ser validado y saneado.
-- Protección contra CSRF, XSS y SQL injection: usar las utilidades que provee Django y seguir las mejores prácticas.
-- Datos sensibles: cuando trabajes con datos personales (PII), minimizar la exposición en los logs y en el historial de commits.
-
-## Pruebas y verificación rápida
-
-- Antes de enviar cambios, ejecutar al menos:
-	- `python manage.py check`
-	- `python manage.py test` (si el proyecto tiene tests)
-	- Comprobación rápida de migraciones: `python manage.py makemigrations --dry-run --check`
-
-Si no puedes ejecutar estos comandos por limitaciones del entorno, documenta los resultados esperados y cualquier riesgo.
-
-## Formato de mensajes y metadatos en PR/commit
-
-- Título PR/commit (línea corta): resumen claro en español.
-- Descripción larga: contexto, por qué se hace el cambio, cómo probarlo, y lista de archivos claves cambiados.
-- Checklist mínimo en la descripción:
-	- [ ] Tests añadidos/actualizados (si aplica)
-	- [ ] Migraciones incluidas (si aplica)
-	- [ ] Documentación actualizada (si aplica)
-
-## Ejemplos rápidos
-
-- Commit correcto:
-
-	"Corrige validación de fecha en formulario de incidencia"
-
-	Descripción: "Se añade validación para impedir fechas futuras en el form de incidencia. Añadido test que cubre fecha válida/ inválida."
-
-- Commit inadecuado:
-
-	"arreglos varios"
-
-	(Demasiado vago; no seguir esta forma)
-
-## Buenas prácticas específicas para agentes IA
-
-- Claridad ante automatización: cuando una IA proponga cambios automáticos (refactor, formateo, generación de código), describir en la PR exactamente qué se cambió y por qué.
-- No actuar solo con cambios masivos sin pruebas: evitar reemplazos a gran escala sin tests ni revisión humana.
-- Explicar supuestos: cualquier decisión tomada por inferencia (por ejemplo, elegir un comportamiento por defecto) debe documentarse en la PR.
-- Ejecutar validaciones estáticas: siempre que sea posible, ejecutar linters y herramientas de análisis estático y reportar resultados.
-
-## Formato y estilo del repositorio
-
-- Archivos de texto: UTF-8 sin BOM.
-- Ramas: nombrar ramas con prefijo corto tipo `feature/`, `fix/`, `chore/` seguido de una descripción y, opcionalmente, el id de issue: `feature/nueva-api-quejas-123`.
-- Tests y fixtures: si añades fixtures, documenta cómo cargarlos y asegurarte de que no contienen datos reales.
-
-## Gestión de la base de datos y datos de prueba
-
-- La base de datos del proyecto (dump) está en: #file:database.sql
-- Para pruebas locales, crea una nueva base de datos aislada y restaura el dump si es necesario. Documenta cualquier paso de restauración que realizaste.
-
-## Registro de cambios y seguimiento
-
-- Mantener un CHANGELOG.md para cambios importantes y breaking changes (si no existe, propon uno en la PR de la primera modificación significativa).
-
-## Preguntas y aclaraciones
-
-Si un agente necesita clarificaciones que no pueden inferirse del código o de este documento, abrir una issue o pedir revisión humana antes de grandes cambios.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ---
 
-Si quieres, puedo generar una versión breve traducida al inglés, o añadir ejemplos concretos adaptados a este repositorio (por ejemplo: convenciones para modelos de quejas, formularios y vistas). Indícame qué prefieres.
+## How to Use This Guide
 
-## Agents Rules
-
-Best practices for automated agents working on this repository (short checklist):
-
-- Respect repository conventions and commit formats described above.
-- Keep changes small and reversible; prefer many small commits over a single large one.
-- Run tests and checks locally before proposing a PR. If a test can't be run, document why and the expected outcome.
-- Do not add or expose secrets in code or commits. Use environment variables and document any required test credentials.
-- When modifying models, include migrations and database-safe steps; provide a rollback plan for destructive changes.
-- Add or update tests for any functional change; include minimal fixtures or factories for predictable test data.
-- Explain automated changes clearly in the PR: what was changed, why, and any assumptions made.
-- If proposing code generation or large refactors, request a human review before merging.
-
-Buenas prácticas (resumen en español):
-
-- Mantener commits pequeños y descriptivos.
-- Ejecutar `manage.py check` y `manage.py test` cuando sea posible; documentar fallos y limitaciones.
-- No incluir secretos; usar variables de entorno para credenciales de prueba.
-- Incluir migraciones y plan de reversión al tocar modelos.
-- Añadir tests mínimos que cubran la nueva funcionalidad.
-- Documentar supuestos y decisiones tomadas por la IA en la descripción de la PR.
+- **Start here** for project overview and architecture fundamentals
+- **Use skills** for detailed patterns on-demand (Django, ORM, HTMX, etc.)
+- Skills provide deep-dive guidance for specific technologies and workflows
 
 ---
 
-Gracias por seguir las convenciones — si quieres personalizado para una carpeta (por ejemplo `apps/quejas/`), lo adapto.
+## Available Skills
 
+Use these skills for detailed patterns on-demand:
+
+### Generic Skills (Any Project)
+
+| Skill | Description | URL |
+|-------|-------------|-----|
+| `python` | Type hints, dataclasses, protocols | [SKILL.md](skills/python/SKILL.md) |
+| `django` | Views, forms, URLs, commands, survey forms | [SKILL.md](skills/django/SKILL.md) |
+| `django-orm` | QuerySets, managers, migrations | [SKILL.md](skills/django-orm/SKILL.md) |
+| `django-htmx` | HTMX integration patterns | [SKILL.md](skills/django-htmx.md/SKILL.md) |
+| `django-health` | Health checks, monitoring endpoints | [SKILL.md](skills/django-health/SKILL.md) |
+| `django-ratelimit` | Rate limiting, spam protection | [SKILL.md](skills/django-ratelimit/SKILL.md) |
+
+### Meta Skills
+
+| Skill | Description | URL |
+|-------|-------------|-----|
+| `skill-creator` | Create new AI agent skills | [SKILL.md](skills/skill-creator/SKILL.md) |
+| `skill-sync` | Sync skill metadata to AGENTS.md | [SKILL.md](skills/skill-sync/SKILL.md) |
+
+---
+
+## Auto-invoke Skills
+
+When performing these actions, ALWAYS invoke the corresponding skill FIRST:
+
+| Action | Skill |
+|--------|-------|
+| After creating/modifying a skill | `skill-sync` |
+| Creating new skills | `skill-creator` |
+| Implementing health checks/monitoring endpoints | `django-health` |
+| Implementing rate limiting/spam protection | `django-ratelimit` |
+| Implementing survey form views | `django` |
+| Regenerate AGENTS.md Auto-invoke tables (sync.sh) | `skill-sync` |
+| Troubleshoot why a skill is missing from AGENTS.md auto-invoke | `skill-sync` |
+| Writing Django ORM queries/models | `django-orm` |
+| Writing Django views/forms/URLs | `django` |
+| Writing HTMX-powered Django views/templates | `django-htmx` |
+| Writing Python types/dataclasses | `python` |
+
+---
+
+## Project Overview
+
+**Tu Voz en Ruta** is a multi-tenant Django application for public transport complaint and survey management. The system uses `django-tenants` to provide isolated database schemas per organization, allowing multiple transport organizations to operate independently on the same infrastructure.
+
+**Tech Stack:**
+
+- Django 5.x + Python 3.11+
+- PostgreSQL with django-tenants (schema-based multi-tenancy)
+- Redis (rate limiting)
+- HTMX (interactive UI)
+- WhiteNoise (static files)
+- Gunicorn (WSGI server)
+
+---
+
+## Architecture
+
+### Multi-tenancy Structure (CRITICAL)
+
+- **Public Schema** (`schema_name='public'`): Contains shared data (Organization, Domain models)
+- **Tenant Schemas**: Each organization gets its own schema with isolated data (surveys, complaints, routes, units)
+- **Schema Routing**:
+  - `PUBLIC_SCHEMA_URLCONF = 'buzon_quejas.urls_public'` - Public tenant URLs (super-admin, organization selection, health checks)
+  - `ROOT_URLCONF = 'buzon_quejas.urls_tenant'` - Tenant-specific URLs (admin, interviews, statistics, QR generator)
+
+**Access Points:**
+
+- Public admin: `/super-admin/`
+- Tenant admin: `/admin/` (different admin site per tenant)
+- Health checks: `/health/` (public schema - no tenant required)
+
+**Important:** The `TenantMainMiddleware` must be first in MIDDLEWARE for proper tenant resolution.
+
+### Django Apps
+
+- `organization/` - **SHARED_APPS**: Multi-tenant models (Organization, Domain), organization selection views
+- `interview/` - **TENANT_APPS**: Survey/complaint system with Question, Answer, SurveySubmission, Complaint models (split across multiple files in models/)
+- `transport/` - **TENANT_APPS**: Route and Unit (vehicle) models, custom tenant admin site
+- `statistical_summary/` - **TENANT_APPS**: Statistical dashboards, reports, and aggregated statistics generation
+- `qr_generator/` - **TENANT_APPS**: QR code generation for surveys/units
+- `users/` - **TENANT_APPS**: Custom user management per tenant
+
+**Database Models:**
+
+- Organization models are in `organization/models.py` (single file)
+- Interview models are split into separate files in `interview/models/` directory (imported via `__init__.py`)
+- Each app uses UUID primary keys for Organization
+
+---
+
+## Common Commands
+
+### Database Setup (First Time)
+
+```bash
+# Start PostgreSQL with Docker
+docker compose up -d
+
+# Initialize database with shared schema and public tenant
+python start_db.py
+
+# Create superuser for public schema
+python manage.py createsuperuser --schema=public
+
+# Populate database with test data
+python populate_db.py
+```
+
+### Migrations
+
+```bash
+# Create migrations (shared schema)
+python manage.py makemigrations
+
+# Apply shared schema migrations only
+python manage.py migrate_schemas --shared
+
+# Apply migrations to all tenant schemas
+python manage.py migrate_schemas
+
+# Apply migrations to specific tenant
+python manage.py migrate_schemas --schema=<schema_name>
+
+# Dry-run check for migration issues
+python manage.py makemigrations --dry-run --check
+```
+
+### Development Server
+
+```bash
+# Run development server (default port 8000)
+python manage.py runserver
+
+# Access public admin
+open http://localhost:8000/super-admin/
+
+# Access tenant admin (need to configure domain first)
+open http://<subdomain>.localhost:8000/admin/
+```
+
+### Validation and Tests
+
+```bash
+# Django system checks
+python manage.py check
+
+# Run all tests
+python manage.py test
+
+# Run tests for specific app
+python manage.py test apps.interview
+
+# Run specific test class
+python manage.py test apps.interview.tests.TestSurveyForm
+
+# Collect static files
+python manage.py collectstatic --no-input
+```
+
+### Management Commands
+
+```bash
+# Generate aggregated reports (statistical_summary app)
+python manage.py generar_reportes_agregados
+
+# Check health status
+curl http://localhost:8000/health/
+```
+
+### Production Build (Railway/Render)
+
+```bash
+# Build script (see build.sh)
+./build.sh
+```
+
+---
+
+## Environment Variables
+
+Required variables (see `.env-example`):
+- `DATABASE_URL` - PostgreSQL connection string (default: `postgresql://buzon_user:buzon_password@localhost:5432/buzon_db`)
+- `SECRET_KEY` - Django secret key
+- `RECAPTCHA_PUBLIC_KEY` - Google reCAPTCHA public key
+- `RECAPTCHA_PRIVATE_KEY` - Google reCAPTCHA private key
+- `REDIS_URL` - Redis connection for rate limiting (default: `redis://localhost:6379/0`)
+- `DEBUG` - Enable debug mode (default: `False`, set to `True` for development)
+
+## Multi-tenant Workflow
+
+1. **Create Organization**: From public admin (`/super-admin/`), create Organization with unique `schema_name`
+2. **Add Domain**: Create Domain pointing to the organization (e.g., `cliente1.tuvozenruta.com`)
+3. **Automatic Schema Creation**: Schema is auto-created due to `auto_create_schema = True` in Organization model
+4. **Access Tenant**: Navigate to tenant domain to access tenant-specific admin and features
+
+## Survey Form Access
+
+**URL Pattern:**
+
+Each unit has its own dedicated survey form URL:
+
+```text
+/survey/<transit_number>/
+```
+
+**Example:**
+
+```text
+https://cliente1.tuvozenruta.com/survey/ABC123/
+```
+
+**Key Features:**
+
+- Each unit is accessed via its unique `transit_number` in the URL path
+- Designed for QR code integration - each QR contains the unit-specific URL
+- General unit selector available at `/survey/` (from admin panel or organization selection)
+- Auto-redirects to first unit if only one exists, or shows selector for multiple units
+- Returns 404 if the unit doesn't exist
+
+**URL Structure:**
+
+- Unit selection: `/survey/` (auto-redirects if only 1 unit, or shows selector)
+- Survey form: `/survey/<transit_number>/`
+- Form submission: `/survey/<transit_number>/submit/`
+- Thank you page: `/survey/thank-you/`
+
+**Implementation:**
+
+- URLs: [apps/interview/urls.py](apps/interview/urls.py)
+- Unit selector view: [apps/interview/views.py:13](apps/interview/views.py#L13) - `select_unit_for_survey()`
+- Survey form view: [apps/interview/views.py:73](apps/interview/views.py#L73) - `survey_form(transit_number)`
+- Submit view: [apps/interview/views.py:107](apps/interview/views.py#L107) - `submit_survey(transit_number)`
+- Templates:
+  - [apps/interview/templates/interview/select_unit.html](apps/interview/templates/interview/select_unit.html) - Unit selector
+  - [apps/interview/templates/interview/no_units.html](apps/interview/templates/interview/no_units.html) - No units available
+  - [apps/interview/templates/interview/form_section.html](apps/interview/templates/interview/form_section.html) - Survey form
+- Form: [apps/interview/forms/select_unit_form.py](apps/interview/forms/select_unit_form.py) - `SelectUnitForm`
+
+**Form Structure:**
+
+1. **Section 1**: Unit information display (read-only, shows transit_number, route, internal_number)
+2. **Section 2**: Dynamic survey questions (ratings, text, choice, multi-choice)
+3. **Section 3**: Optional complaint with reason and text
+4. **reCAPTCHA**: Spam protection
+
+## Key Conventions (from AGENTS.md)
+
+- **Language**: Comments and documentation in Spanish
+- **Commit Messages**: Spanish, imperative tense, atomic commits
+- **Code Style**: PEP8 for Python
+- **Security**: Validate all user inputs, use Django's built-in protections (CSRF, XSS, SQL injection)
+- **Tests**: Include tests for functional changes
+- **Migrations**: Always include migrations when modifying models, explain their purpose
+- **Branch Naming**: Use `feature/`, `fix/`, `chore/` prefixes
+- **No Secrets**: Never commit credentials; use environment variables
+
+## Database Reference
+
+Database dump location: `#file:database.sql` (mentioned in AGENTS.md)
+
+## Deployment
+
+- **Platform**: Railway/Render (configured via `Procfile`)
+- **Procfile**: Runs `collectstatic`, `start_db.py`, then `gunicorn`
+- **Static Files**: Managed by WhiteNoise in production
+- **Time Zone**: America/Mazatlan (UTC-7, Nayarit, México)
+- **Allowed Hosts**: `tuvozenruta.com`, `*.tuvozenruta.com`, `*.up.railway.app`
+
+## Admin Customization
+
+Uses `django-jazzmin` for enhanced admin interface with custom branding, icons, and navigation (configured extensively in `settings.py:196-337`).
+
+
+
+## Health Checks
+
+**System Health Monitoring:**
+
+- Uses **django-health-check** to provide health check endpoints
+- Configured in public schema (accessible without tenant)
+- Full documentation: [HEALTH_CHECKS.md](HEALTH_CHECKS.md)
+
+**Available Checks:**
+
+- Database connectivity (`health_check.db`)
+- Pending migrations (`health_check.contrib.migrations`)
+
+**Endpoints:**
+
+```bash
+# Check all health endpoints
+curl http://localhost:8000/health/
+
+# Get JSON response
+curl http://localhost:8000/health/?format=json
+
+# Check specific component
+curl http://localhost:8000/health/db/
+curl http://localhost:8000/health/migrations/
+```
+
+See [HEALTH_CHECKS.md](HEALTH_CHECKS.md) for Docker healthchecks, Kubernetes probes, and monitoring integration.
+
+## Rate Limiting
+
+**Survey Submission Protection:**
+
+- Uses **django-ratelimit** with Redis backend
+- Configured in [interview/views.py:107](apps/interview/views.py#L107) - `submit_survey()` function
+- Rate limit: 1 submission per IP+Unit combination every 15 minutes
+- Custom key function: `get_ratelimit_key_ip_and_unit` combines IP and unit ID
+
+**Configuration:**
+
+```python
+@ratelimit(key=get_ratelimit_key_ip_and_unit, rate='1/15m', method='POST', block=False)
+def submit_survey(request):
+    if getattr(request, 'limited', False):
+        # Handle rate limit exceeded
+```
+
+**Required Environment Variable:**
+
+```bash
+# Redis connection for rate limiting
+REDIS_URL=redis://localhost:6379/0
+```
+
+## Important Notes
+
+- The `TenantMainMiddleware` must be first in MIDDLEWARE
+- Database engine must be `django_tenants.postgresql_backend`
+- When working with models, check if they belong to SHARED_APPS or TENANT_APPS
+- Always specify `--schema` flag when creating superusers or running tenant-specific commands
+- Never run destructive git operations or bypass hooks without explicit request

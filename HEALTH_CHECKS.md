@@ -370,9 +370,9 @@ HEALTH_CHECK = {
 }
 ```
 
-### Sentry
+### Logging
 
-Los errores de health check se reportarán automáticamente a Sentry si está configurado.
+Los errores de health check se registrarán en los logs de Django para monitoreo y debugging.
 
 ## Consideraciones de Seguridad
 
