@@ -6,11 +6,15 @@ description: >
 license: Apache-2.0
 metadata:
   author: Carlos
-  version: "1.0"
+  version: "1.1"
   scope: [root]
   auto_invoke: "Writing HTMX-powered Django views/templates"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
 ---
+
+## ⚠️ CRITICAL: Class-Based Views Only
+
+**All Django views in this project MUST use Class-Based Views (CBV). Function-Based Views are prohibited.**
 
 ## What is HTMX?
 
@@ -131,48 +135,73 @@ every 2s   - Poll every 2 seconds
 </button>
 ```
 
-## Django Views for HTMX
+## Django Class-Based Views for HTMX
+
+**CRITICAL**: Use Class-Based Views (CBV) exclusively, as per project standards.
 
 ```python
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.views.generic import ListView, CreateView, DeleteView, TemplateView
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse
+from typing import Any
 
-def user_list(request: HttpRequest) -> HttpResponse:
+class UserListView(ListView):
     """View that works for both full page and HTMX requests."""
-    users = User.objects.all()
+    model = User
+    context_object_name = "users"
+    
+    def get_template_names(self):
+        # Return partial template for HTMX requests
+        if self.request.htmx:
+            return ["users/_user_list.html"]
+        # Return full page for regular requests
+        return ["users/list.html"]
 
-    # Check if request is from HTMX
-    if request.htmx:
-        # Return only the partial template
-        template_name = "users/_user_list.html"
-    else:
-        # Return full page
-        template_name = "users/list.html"
+class UserDeleteView(DeleteView):
+    """Delete user and return updated list via HTMX."""
+    model = User
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        
+        # Return updated user list for HTMX
+        users = User.objects.all()
+        return render(request, "users/_user_list.html", {"users": users})
 
-    return render(request, template_name, {"users": users})
-
-def user_delete(request: HttpRequest, user_id: int) -> HttpResponse:
-    """Delete user and return updated list."""
-    user = get_object_or_404(User, id=user_id)
-    user.delete()
-
-    # Return updated user list
-    users = User.objects.all()
-    return render(request, "users/_user_list.html", {"users": users})
-
-def user_create(request: HttpRequest) -> HttpResponse:
+class UserCreateView(CreateView):
     """Create user via HTMX form."""
-    if request.method == "POST":
-        form = UserForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # Return new user row
-            return render(request, "users/_user_row.html", {"user": user})
-        # Return form with errors
-    else:
-        form = UserForm()
+    model = User
+    form_class = UserForm
+    template_name = "users/_user_form.html"
+    
+    def form_valid(self, form):
+        """Return new user row for HTMX."""
+        user = form.save()
+        return render(self.request, "users/_user_row.html", {"user": user})
+    
+    def form_invalid(self, form):
+        """Return form with errors for HTMX."""
+        return render(self.request, self.template_name, {"form": form})
+```
 
-    return render(request, "users/_user_form.html", {"form": form})
+**Alternative Pattern - Using TemplateView for Custom Logic:**
+
+```python
+class UserSearchView(TemplateView):
+    """Search users with HTMX live search."""
+    template_name = "users/_user_list.html"
+    
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get("q", "")
+        
+        if query:
+            context["users"] = User.objects.filter(name__icontains=query)
+        else:
+            context["users"] = User.objects.all()
+        
+        return context
 ```
 
 ## Template Patterns
@@ -227,53 +256,77 @@ def user_create(request: HttpRequest) -> HttpResponse:
 ## django-htmx Middleware Features
 
 ```python
-from django.http import HttpRequest, HttpResponse
+from django.views.generic import TemplateView
+from typing import Any
 
-def my_view(request: HttpRequest) -> HttpResponse:
-    # Check if request is from HTMX
-    if request.htmx:
-        # HTMX request
-        pass
-
-    # Check if request is boosted
-    if request.htmx.boosted:
-        pass
-
-    # Get current URL in browser
-    current_url = request.htmx.current_url
-
-    # Get target element ID
-    target = request.htmx.target
-
-    # Get trigger element ID
-    trigger = request.htmx.trigger
+class MyView(TemplateView):
+    template_name = "my_template.html"
+    
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        
+        # Check if request is from HTMX
+        if self.request.htmx:
+            context["is_htmx"] = True
+        
+        # Check if request is boosted
+        if self.request.htmx and self.request.htmx.boosted:
+            context["is_boosted"] = True
+        
+        # Get HTMX request metadata
+        if self.request.htmx:
+            context["current_url"] = self.request.htmx.current_url
+            context["target"] = self.request.htmx.target
+            context["trigger"] = self.request.htmx.trigger
+        
+        return context
 ```
 
 ## django-htmx HTTP Response Helpers
 
 ```python
+from django.views.generic import FormView, TemplateView
 from django_htmx.http import (
     HttpResponseClientRedirect,
     HttpResponseLocation,
     trigger_client_event,
 )
+from django.shortcuts import render
 
-# Client-side redirect (full page reload)
-def my_view(request: HttpRequest) -> HttpResponse:
-    return HttpResponseClientRedirect("/dashboard/")
+class UserFormView(FormView):
+    """Form view with HTMX redirect on success."""
+    form_class = UserForm
+    template_name = "users/_user_form.html"
+    
+    def form_valid(self, form):
+        form.save()
+        # Client-side redirect (full page reload)
+        return HttpResponseClientRedirect("/dashboard/")
 
-# Location redirect (HTMX boosted request)
-def my_view(request: HttpRequest) -> HttpResponse:
-    return HttpResponseLocation("/dashboard/")
+class UserDetailView(TemplateView):
+    """Detail view with HTMX location redirect."""
+    template_name = "users/detail.html"
+    
+    def post(self, request, *args, **kwargs):
+        # Process action...
+        # Location redirect (HTMX boosted request)
+        return HttpResponseLocation("/dashboard/")
 
-# Trigger client-side event
-def my_view(request: HttpRequest) -> HttpResponse:
-    response = render(request, "template.html", {})
-    return trigger_client_event(
-        response,
-        "userCreated",
-        {"userId": 123, "name": "Carlos"}
-    )
+class UserCreateEventView(CreateView):
+    """Create user and trigger client-side event."""
+    model = User
+    form_class = UserForm
+    template_name = "users/_user_form.html"
+    
+    def form_valid(self, form):
+        user = form.save()
+        response = render(self.request, "users/_user_row.html", {"user": user})
+        # Trigger client-side event with data
+        return trigger_client_event(
+            response,
+            "userCreated",
+            {"userId": user.id, "name": user.name}
+        )
 ```
 
 ## Out-of-Band Swaps
@@ -291,13 +344,32 @@ def my_view(request: HttpRequest) -> HttpResponse:
 </div>
 ```
 
+## URL Configuration for HTMX Views
+
+```python
+# users/urls.py
+from django.urls import path
+from . import views
+
+app_name = "users"
+
+urlpatterns = [
+    path("", views.UserListView.as_view(), name="user_list"),
+    path("create/", views.UserCreateView.as_view(), name="user_create"),
+    path("<int:pk>/delete/", views.UserDeleteView.as_view(), name="user_delete"),
+    path("search/", views.UserSearchView.as_view(), name="user_search"),
+]
+```
+
 ## Best Practices Checklist
 
 **ALWAYS:**
 
+- ✅ **Use Class-Based Views (CBV) for HTMX endpoints**
 - ✅ Include CSRF token in HTMX requests (via `hx-headers`)
 - ✅ Use `request.htmx` to detect HTMX requests
 - ✅ Return partial templates for HTMX, full pages for regular requests
+- ✅ Override `get_template_names()` to switch between full/partial templates
 - ✅ Use semantic HTML and proper HTTP methods (GET, POST, DELETE)
 - ✅ Add loading indicators with `hx-indicator`
 - ✅ Use `hx-confirm` for destructive actions
@@ -307,6 +379,7 @@ def my_view(request: HttpRequest) -> HttpResponse:
 
 **NEVER:**
 
+- ❌ **Use Function-Based Views (use CBV instead)**
 - ❌ Skip CSRF protection on POST/DELETE requests
 - ❌ Return full HTML pages for HTMX requests
 - ❌ Forget to handle form validation errors
