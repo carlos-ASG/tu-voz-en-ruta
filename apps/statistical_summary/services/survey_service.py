@@ -52,3 +52,25 @@ def get_timeline_data(
         02:00: 3 envíos
     """
     return survey_repository.get_submissions_timeline(filters, group_by_hour)
+
+
+def get_submissions_by_unit_data(filters: dict[str, Any]) -> dict[str, int]:
+    """
+    Obtiene formularios agrupados por unidad.
+    
+    Delega al repository para obtener la agrupación.
+    
+    Args:
+        filters: Filtros para queryset
+        
+    Returns:
+        Diccionario {transit_number: count}
+        
+    Example:
+        >>> by_unit = get_submissions_by_unit_data({})
+        >>> for unit, count in by_unit.items():
+        ...     print(f"Unidad {unit}: {count} formularios")
+        Unidad ABC123: 15 formularios
+        Unidad XYZ789: 10 formularios
+    """
+    return survey_repository.get_submissions_by_unit(filters)

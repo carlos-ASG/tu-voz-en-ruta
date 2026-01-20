@@ -97,3 +97,33 @@ class TestGetSubmissionsTimelineByHour(StatisticalTestCase):
         # Verificar que los conteos son positivos
         for count in timeline.counts:
             self.assertGreater(count, 0)
+
+
+class TestGetSubmissionsByUnit(StatisticalTestCase):
+    """Tests para survey_repository.get_submissions_by_unit()."""
+    
+    def test_get_submissions_by_unit_with_data(self):
+        """
+        Verifica que get_submissions_by_unit() retorna diccionario con:
+        - Claves = transit_numbers
+        - Valores = conteos de formularios
+        - Ordenado por cantidad descendente
+        """
+        # Arrange
+        # 10 formularios distribuidos en diferentes unidades (setUp)
+        
+        # Act
+        by_unit = survey_repository.get_submissions_by_unit({})
+        
+        # Assert
+        # Debe haber al menos 1 unidad con formularios
+        self.assertGreater(len(by_unit), 0)
+        
+        # Verificar que las claves son transit_numbers
+        for transit_number, count in by_unit.items():
+            self.assertIn(transit_number[:3], ['ABC', 'XYZ'])
+            self.assertGreater(count, 0)
+        
+        # Verificar que está ordenado por cantidad descendente
+        counts = list(by_unit.values())
+        self.assertEqual(counts, sorted(counts, reverse=True))

@@ -65,6 +65,7 @@ class DashboardStatistics:
         total_complaints: Total de quejas
         complaints_by_reason: Quejas agrupadas por motivo
         complaints_by_unit: Quejas agrupadas por número de tránsito
+        submissions_by_unit: Formularios/encuestas agrupados por número de tránsito
         questions_statistics: Estadísticas de preguntas activas
         survey_submissions_timeline: Timeline de envíos
     """
@@ -73,5 +74,6 @@ class DashboardStatistics:
     total_complaints: int
     complaints_by_reason: dict[str, int]
     complaints_by_unit: dict[str, int]
+    submissions_by_unit: dict[str, int]
     questions_statistics: dict[str, QuestionStatistic]
     survey_submissions_timeline: TimelineData

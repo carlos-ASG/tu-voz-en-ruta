@@ -88,3 +88,41 @@ def get_submissions_timeline(
             counts.append(item.get('count', 0))
     
     return TimelineData(dates=dates, counts=counts)
+
+
+def get_submissions_by_unit(filters: dict[str, Any]) -> dict[str, int]:
+    """
+    Obtiene envíos de formularios agrupados por número de tránsito.
+    
+    Similar a complaint_repository.get_by_unit() pero para SurveySubmission.
+    Retorna diccionario ordenado descendentemente por cantidad de envíos.
+    
+    Args:
+        filters: Filtros a aplicar al queryset
+        
+    Returns:
+        Diccionario {transit_number: count} ordenado por cantidad descendente
+        
+    Example:
+        >>> by_unit = get_submissions_by_unit({})
+        >>> print(by_unit)
+        {'ABC123': 15, 'XYZ789': 10, 'DEF456': 5}
+    """
+    # Filtrar envíos y agrupar por unidad
+    submissions_by_unit = (
+        SurveySubmission.objects.filter(**filters)
+        .exclude(unit__isnull=True)  # Excluir envíos sin unidad
+        .values('unit__transit_number')
+        .annotate(count=Count('id'))
+        .order_by('-count')  # Ordenar descendente por cantidad
+    )
+    
+    # Convertir a diccionario simple: {transit_number: count}
+    by_unit: dict[str, int] = {}
+    for item in submissions_by_unit:
+        transit_number = item.get('unit__transit_number')
+        count = item.get('count', 0)
+        if transit_number:
+            by_unit[transit_number] = count
+    
+    return by_unit

@@ -56,6 +56,9 @@ def calculate_dashboard_statistics(
     complaints_summary = complaints_service.get_complaints_data(complaints_filters)
     complaints_by_unit = complaints_service.get_complaints_by_unit_data(complaints_filters)
     
+    # ==================== KPI 2.5: Formularios por Unidad ====================
+    submissions_by_unit = survey_service.get_submissions_by_unit_data(submissions_filters)
+    
     # ==================== KPI 3: Estadísticas de preguntas ====================
     questions_stats = questions_service.get_questions_statistics(
         start_date, route_id, unit_id
@@ -72,6 +75,7 @@ def calculate_dashboard_statistics(
         total_complaints=complaints_summary.total_complaints,
         complaints_by_reason=complaints_summary.by_reason,
         complaints_by_unit=complaints_by_unit,
+        submissions_by_unit=submissions_by_unit,
         questions_statistics=questions_stats,
         survey_submissions_timeline=timeline
     )

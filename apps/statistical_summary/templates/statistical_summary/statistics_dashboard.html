@@ -85,6 +85,47 @@
             </div>
         </div>
 
+        <!-- General Statistics Section -->
+        <div class="general-statistics-section">
+            <h2 class="section-title">📈 Estadísticas Generales</h2>
+            
+            <!-- Complaints by Unit -->
+            {% if statistics.complaints_by_unit %}
+            <div class="complaints-by-unit-container">
+                <div class="complaints-by-unit-header">
+                    <span class="complaints-by-unit-icon">🚌</span>
+                    <h3>Quejas por Unidad</h3>
+                </div>
+                <div class="complaints-by-unit-chart-wrapper">
+                    <canvas id="complaintsByUnitChart" data-complaints-by-unit='{{ statistics.complaints_by_unit|tojson }}'></canvas>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-data-placeholder">
+                <p class="no-complaints-by-unit-message">No hay datos de quejas por unidad para mostrar en este período.</p>
+            </div>
+            {% endif %}
+
+            </br>
+
+            <!-- Submissions by Unit -->
+            {% if statistics.submissions_by_unit %}
+            <div class="complaints-by-unit-container">
+                <div class="complaints-by-unit-header">
+                    <span class="complaints-by-unit-icon">📝</span>
+                    <h3>Formularios por Unidad</h3>
+                </div>
+                <div class="complaints-by-unit-chart-wrapper">
+                    <canvas id="submissionsByUnitChart" data-submissions-by-unit='{{ statistics.submissions_by_unit|tojson }}'></canvas>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-data-placeholder">
+                <p class="no-complaints-by-unit-message">No hay datos de formularios por unidad para mostrar en este período.</p>
+            </div>
+            {% endif %}
+        </div>
+
         <!-- Questions Statistics Section -->
         {% if statistics.questions_statistics %}
         <div class="questions-section">
@@ -148,27 +189,7 @@
         </div>
         {% endif %}
 
-        <!-- General Statistics Section -->
-        <div class="general-statistics-section">
-            <h2 class="section-title">📈 Estadísticas Generales</h2>
-            
-            <!-- Complaints by Unit -->
-            {% if statistics.complaints_by_unit %}
-            <div class="complaints-by-unit-container">
-                <div class="complaints-by-unit-header">
-                    <span class="complaints-by-unit-icon">🚌</span>
-                    <h3>Quejas por Unidad</h3>
-                </div>
-                <div class="complaints-by-unit-chart-wrapper">
-                    <canvas id="complaintsByUnitChart" data-complaints-by-unit='{{ statistics.complaints_by_unit|tojson }}'></canvas>
-                </div>
-            </div>
-            {% else %}
-            <div class="no-data-placeholder">
-                <p class="no-complaints-by-unit-message">No hay datos de quejas por unidad para mostrar en este período.</p>
-            </div>
-            {% endif %}
-        </div>
+        
     {% endif %}
 </div>
 {% endblock %}
@@ -178,5 +199,6 @@
 <script src="{% static 'statistical_summary/js/complaint_chart.js' %}"></script>
 <script src="{% static 'statistical_summary/js/survey_chart.js' %}"></script>
 <script src="{% static 'statistical_summary/js/complaints_by_unit_chart.js' %}"></script>
+<script src="{% static 'statistical_summary/js/submissions_by_unit_chart.js' %}"></script>
 <script src="{% static 'statistical_summary/js/filter_script.js' %}"></script>
 {% endblock %}

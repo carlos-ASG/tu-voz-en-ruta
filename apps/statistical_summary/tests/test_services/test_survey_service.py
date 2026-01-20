@@ -70,3 +70,26 @@ class TestGetTimelineData(StatisticalTestCase):
         for date_str in timeline.dates:
             parsed = timezone.datetime.strptime(date_str, '%Y-%m-%d')
             self.assertIsNotNone(parsed)
+
+
+class TestGetSubmissionsByUnitData(StatisticalTestCase):
+    """Tests para survey_service.get_submissions_by_unit_data()."""
+    
+    def test_get_submissions_by_unit_data_with_submissions(self):
+        """
+        Verifica que get_submissions_by_unit_data() retorna diccionario
+        correctamente agrupado por unidad.
+        """
+        # Arrange
+        # 10 formularios pre-cargados
+        
+        # Act
+        by_unit = survey_service.get_submissions_by_unit_data({})
+        
+        # Assert
+        self.assertGreater(len(by_unit), 0)
+        self.assertIsInstance(by_unit, dict)
+        
+        # Verificar orden descendente
+        counts = list(by_unit.values())
+        self.assertEqual(counts, sorted(counts, reverse=True))

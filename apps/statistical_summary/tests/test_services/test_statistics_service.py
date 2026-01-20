@@ -20,6 +20,7 @@ class TestCalculateDashboardStatisticsToday(StatisticalTestCase):
         - period_label
         - total_submissions
         - total_complaints
+        - submissions_by_unit
         - questions_statistics
         - survey_submissions_timeline agrupado por hora
         """
@@ -36,6 +37,10 @@ class TestCalculateDashboardStatisticsToday(StatisticalTestCase):
         self.assertEqual(stats.period_label, "Hoy")
         self.assertEqual(stats.total_submissions, 10)
         self.assertEqual(stats.total_complaints, 8)
+        
+        # Verificar nuevo campo submissions_by_unit
+        self.assertIsInstance(stats.submissions_by_unit, dict)
+        self.assertGreaterEqual(len(stats.submissions_by_unit), 0)
         
         # Verificar que hay estadísticas de preguntas
         self.assertEqual(len(stats.questions_statistics), 5)
