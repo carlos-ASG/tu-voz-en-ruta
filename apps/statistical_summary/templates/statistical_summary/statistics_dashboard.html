@@ -1,5 +1,6 @@
 {% extends 'organization/base_admin_views.html' %}
 {% load static %}
+{% load stats_filters %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -34,7 +35,7 @@
                 <a href="?period=year" class="filter-btn {% if period == 'year' %}active{% endif %}">Este Año</a>
                 <a href="?period=all" class="filter-btn {% if period == 'all' %}active{% endif %}">Todo el Tiempo</a>
             </div>
-            <p class="current-period">Mostrando datos de: <strong>{{ period_label }}</strong></p>
+            <p class="current-period">Mostrando datos de: <strong>{{ statistics.period_label }}</strong></p>
         </div>
 
         <!-- KPIs Section -->
@@ -44,15 +45,15 @@
                 <div class="kpi-card kpi-primary">
                     <div class="kpi-icon">📝</div>
                     <div class="kpi-content">
-                        <h3>{{ total_submissions }}</h3>
+                        <h3>{{ statistics.total_submissions }}</h3>
                         <p>Envíos de Encuestas</p>
                     </div>
                 </div>
                 <!-- Gráfica de línea de tiempo de encuestas -->
-                {% if survey_submissions_timeline.dates %}
+                {% if statistics.survey_submissions_timeline.dates %}
                 <div class="kpi-chart-container">
                     <h4 class="chart-title">Tendencia de Envíos</h4>
-                    <canvas id="surveysChart" data-timeline='{{ survey_submissions_timeline_json|safe }}'></canvas>
+                    <canvas id="surveysChart" data-timeline='{{ statistics.survey_submissions_timeline|tojson }}'></canvas>
                 </div>
                 {% else %}
                 <div class="kpi-chart-placeholder">
@@ -66,15 +67,15 @@
                 <div class="kpi-card kpi-warning">
                     <div class="kpi-icon">⚠️</div>
                     <div class="kpi-content">
-                        <h3>{{ total_complaints }}</h3>
+                        <h3>{{ statistics.total_complaints }}</h3>
                         <p>Total de Quejas</p>
                     </div>
                 </div>
                 <!-- Gráfica de quejas por motivo -->
-                {% if complaints_by_reason %}
+                {% if statistics.complaints_by_reason %}
                 <div class="kpi-chart-container">
                     <h4 class="chart-title">Quejas por Motivo</h4>
-                    <canvas id="complaintsChart" data-complaints='{{ complaints_by_reason_json|safe }}'></canvas>
+                    <canvas id="complaintsChart" data-complaints='{{ statistics.complaints_by_reason|tojson }}'></canvas>
                 </div>
                 {% else %}
                 <div class="kpi-chart-placeholder">
@@ -85,7 +86,7 @@
         </div>
 
         <!-- Questions Statistics Section -->
-        {% if questions_statistics %}
+        {% if statistics.questions_statistics %}
         <div class="questions-section">
             <h2 class="section-title">📊 Estadísticas por Pregunta</h2>
             
@@ -101,7 +102,7 @@
                 <!-- Select de rutas (oculto inicialmente) -->
                 <select id="routeSelect" class="filter-select entity-select" style="display: none;">
                     <option value="">-- Seleccionar ruta --</option>
-                    {% for route in routes %}
+                    {% for route in filters_data.routes %}
                     <option value="{{ route.id }}" {% if selected_route == route.id|stringformat:"s" %}selected{% endif %}>
                         {{ route.name }}
                     </option>
@@ -111,7 +112,7 @@
                 <!-- Select de unidades (oculto inicialmente) -->
                 <select id="unitSelect" class="filter-select entity-select" style="display: none;">
                     <option value="">-- Seleccionar camión --</option>
-                    {% for unit in units %}
+                    {% for unit in filters_data.units %}
                     <option value="{{ unit.id }}" {% if selected_unit == unit.id|stringformat:"s" %}selected{% endif %}>
                         {{ unit.transit_number }}
                     </option>
@@ -123,7 +124,7 @@
             </div>
             
             <div class="questions-grid">
-                {% for question_text, data in questions_statistics.items %}
+                {% for question_text, data in statistics.questions_statistics.items %}
                     <div class="question-card" data-question-type="{{ data.type }}">
                         <h3 class="question-title">{{ question_text }}</h3>
                         <span class="question-type-badge">{{ data.type }}</span>
@@ -139,7 +140,7 @@
                             <canvas id="chart-{{ forloop.counter }}" 
                                     data-question="{{ question_text }}"
                                     data-type="{{ data.type }}"
-                                    data-summary='{{ data.summary|safe }}'></canvas>
+                                    data-summary='{{ data.summary|tojson }}'></canvas>
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -152,14 +153,14 @@
             <h2 class="section-title">📈 Estadísticas Generales</h2>
             
             <!-- Complaints by Unit -->
-            {% if complaints_by_unit %}
+            {% if statistics.complaints_by_unit %}
             <div class="complaints-by-unit-container">
                 <div class="complaints-by-unit-header">
                     <span class="complaints-by-unit-icon">🚌</span>
                     <h3>Quejas por Unidad</h3>
                 </div>
                 <div class="complaints-by-unit-chart-wrapper">
-                    <canvas id="complaintsByUnitChart" data-complaints-by-unit='{{ complaints_by_unit_json|safe }}'></canvas>
+                    <canvas id="complaintsByUnitChart" data-complaints-by-unit='{{ statistics.complaints_by_unit|tojson }}'></canvas>
                 </div>
             </div>
             {% else %}

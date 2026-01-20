@@ -7,7 +7,6 @@ delegando toda la lógica de negocio a los services.
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import TemplateView
 from typing import Any
-import json
 
 from .services.statistics_service import calculate_dashboard_statistics
 from .repositories.transport_repository import get_filter_data
@@ -67,32 +66,18 @@ class DashboardView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
             filters_data = get_filter_data()
             
             # Preparar contexto para el template
+            # Nota: El filtro custom 'tojson' en el template se encargará de
+            # serializar los datos a JSON, eliminando duplicación.
             context.update({
                 'has_data': True,
                 'period': period,
                 'organization_name': self.request.tenant.name,
-                'routes': filters_data.routes,
-                'units': filters_data.units,
                 'selected_route': route_id,
                 'selected_unit': unit_id,
-                # KPIs principales
-                'period_label': statistics.period_label,
-                'total_submissions': statistics.total_submissions,
-                'total_complaints': statistics.total_complaints,
-                'complaints_by_reason': statistics.complaints_by_reason,
-                'complaints_by_unit': statistics.complaints_by_unit,
-                'questions_statistics': statistics.questions_statistics,
-                'survey_submissions_timeline': {
-                    'dates': statistics.survey_submissions_timeline.dates,
-                    'counts': statistics.survey_submissions_timeline.counts,
-                },
-                # JSON serializado para JavaScript/Chart.js
-                'complaints_by_reason_json': json.dumps(statistics.complaints_by_reason),
-                'survey_submissions_timeline_json': json.dumps({
-                    'dates': statistics.survey_submissions_timeline.dates,
-                    'counts': statistics.survey_submissions_timeline.counts,
-                }),
-                'complaints_by_unit_json': json.dumps(statistics.complaints_by_unit),
+                # Objeto completo con todas las estadísticas
+                'statistics': statistics,
+                # Datos para filtros (rutas y unidades)
+                'filters_data': filters_data,
             })
         
         except ValueError as e:
