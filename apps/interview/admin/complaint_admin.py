@@ -5,7 +5,8 @@ from .read_only_admin_mixin import ReadOnlyAdminMixin
 
 
 class ComplaintAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
-    list_display = ('unit', 'reason', 'submitted_at', 'created_at')
+    list_display = ('unit', 'reason', 'text', 'created_at')
+    ordering = ('-created_at',)
     # ✅ Cambiar 'unit__unit_number' por 'unit__transit_number'
     search_fields = ('unit__transit_number', 'reason__label')
     readonly_fields = ('created_at',)

@@ -12,5 +12,4 @@ urlpatterns = [
 
     # Health checks - disponibles en esquema público para monitoreo
     path('health/', include('health_check.urls')),
-    path('monitoring/', include('monitoring.urls', namespace='monitoring')),
 ]

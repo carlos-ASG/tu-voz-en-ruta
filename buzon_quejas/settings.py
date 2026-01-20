@@ -263,7 +263,7 @@ JAZZMIN_SETTINGS = {
     # Welcome text on the login screen
     "welcome_sign": "Bienvenido a Tu voz en ruta",
     # Copyright on the footer
-    "copyright": "C.S. code",
+    "copyright": "Carlos Alberto Sandoval Guardado",
     # List of model admins to search from the search bar, search bar omitted if excluded
     # If you want to use a single search field you dont need to use a list, you can use a simple string
     # Dejar vacío o comentar para ocultar la barra de búsqueda del navbar
