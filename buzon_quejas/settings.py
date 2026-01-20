@@ -171,6 +171,10 @@ db_config = dj_database_url.config(
     conn_max_age=600
 )
 
+db_config['TEST'] = {
+    'SERIALIZE': False,  # RECOMENDADO para tenants (explico abajo por qué)
+}
+
 # 2. ¡Importante! Sobrescribe el motor (ENGINE) por el de django-tenants
 db_config['ENGINE'] = 'django_tenants.postgresql_backend'
 
