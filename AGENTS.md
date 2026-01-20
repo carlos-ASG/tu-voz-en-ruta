@@ -26,6 +26,7 @@ Use these skills for detailed patterns on-demand:
 | `django-htmx` | HTMX integration patterns | [SKILL.md](skills/django-htmx.md/SKILL.md) |
 | `django-health` | Health checks, monitoring endpoints | [SKILL.md](skills/django-health/SKILL.md) |
 | `django-ratelimit` | Rate limiting, spam protection | [SKILL.md](skills/django-ratelimit/SKILL.md) |
+| `chartjs-graphs` | Chart.js statistical graphs integration | [SKILL.md](skills/chartjs-graphs/SKILL.md) |
 
 ### Meta Skills
 
@@ -43,9 +44,11 @@ When performing these actions, ALWAYS invoke the corresponding skill FIRST:
 | Action | Skill |
 |--------|-------|
 | After creating/modifying a skill | `skill-sync` |
+| Creating Chart.js graphs in Django | `chartjs-graphs` |
 | Creating new skills | `skill-creator` |
 | Implementing health checks/monitoring endpoints | `django-health` |
 | Implementing rate limiting/spam protection | `django-ratelimit` |
+| Implementing statistical dashboards with charts | `chartjs-graphs` |
 | Implementing survey form views | `django` |
 | Regenerate AGENTS.md Auto-invoke tables (sync.sh) | `skill-sync` |
 | Troubleshoot why a skill is missing from AGENTS.md auto-invoke | `skill-sync` |
