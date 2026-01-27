@@ -1,10 +1,10 @@
-from django.contrib import admin
+from unfold.admin import ModelAdmin
 from ..models import Question
 from apps.transport.admin import tenant_admin_site
 
 
 
-class QuestionAdmin(admin.ModelAdmin):
+class QuestionAdmin(ModelAdmin):
     list_display = ('text_short', 'type', 'position', 'active', 'created_at', 'updated_at')
     list_filter = ('type', 'active')
     search_fields = ('text',)

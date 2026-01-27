@@ -1,9 +1,9 @@
-from django.contrib import admin
+from unfold.admin import ModelAdmin
 from ..models import QuestionOption
 from apps.transport.admin import tenant_admin_site
 
 
-class QuestionOptionAdmin(admin.ModelAdmin):
+class QuestionOptionAdmin(ModelAdmin):
     list_display = ('question', 'text', 'position', 'created_at')
     search_fields = ('text', 'question__text')
     ordering = ('question', 'position')

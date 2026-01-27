@@ -1,9 +1,9 @@
-from django.contrib import admin
+from unfold.admin import ModelAdmin
 from ..models import Answer
 from .read_only_admin_mixin import ReadOnlyAdminMixin
 from apps.transport.admin import tenant_admin_site
 
-class AnswerAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+class AnswerAdmin(ReadOnlyAdminMixin, ModelAdmin):
     list_display = ('question', 'get_question_type', 'get_answer_display', 'created_at')
     list_filter = ('created_at', 'question', 'question__type')
     search_fields = ('question__text',)

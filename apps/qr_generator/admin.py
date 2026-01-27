@@ -1,11 +1,11 @@
-from django.contrib import admin
 from django.shortcuts import redirect
+from unfold.admin import ModelAdmin
 
 from apps.qr_generator.models import QrGenerator
 from apps.transport.admin import tenant_admin_site
 
 
-class QrGeneratorAdmin(admin.ModelAdmin):
+class QrGeneratorAdmin(ModelAdmin):
     """
     Admin para el modelo proxy QrGenerator.
     Redirige a la vista del generador de códigos QR.

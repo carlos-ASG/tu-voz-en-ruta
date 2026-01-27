@@ -1,11 +1,11 @@
-from django.contrib import admin
 from django.shortcuts import redirect
+from unfold.admin import ModelAdmin
 
 from .models import StatisticalSummary
 from apps.transport.admin import tenant_admin_site
 
 
-class StatisticalSummaryAdmin(admin.ModelAdmin):
+class StatisticalSummaryAdmin(ModelAdmin):
     """
     Admin para el modelo proxy StatisticalSummary.
     Redirige a la vista de estadísticas del dashboard.

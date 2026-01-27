@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
-
+from django.templatetags.static import static
 
 from dotenv import load_dotenv
 
@@ -58,7 +58,9 @@ CSRF_TRUSTED_ORIGINS = [
 
 # 1. Apps de tenant (incluir transport SOLO aquí)
 TENANT_APPS = [
-    'jazzmin',  # ← Debe ir primero para sobrescribir templates de admin
+    'unfold',  # ← Debe ir primero para sobrescribir templates de admin
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -74,9 +76,11 @@ TENANT_APPS = [
 ]
 
 # 2. Apps compartidas (transport NO va aquí)
-# IMPORTANTE: Jazzmin debe ir PRIMERO, antes de django_tenants y django.contrib.admin
+# IMPORTANTE: Unfold debe ir PRIMERO, antes de django_tenants y django.contrib.admin
 SHARED_APPS = [
-    'jazzmin',  # ← PRIMERO para que sus templates/static tengan prioridad
+    'unfold',  # ← PRIMERO para que sus templates/static tengan prioridad
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
     'django_tenants',
     'apps.organization.apps.OrganizationConfig',
     'apps.users.apps.UsersConfig',  # App de usuarios personalizado
@@ -172,7 +176,7 @@ db_config = dj_database_url.config(
 )
 
 db_config['TEST'] = {
-    'SERIALIZE': False,  # RECOMENDADO para tenants (explico abajo por qué)
+    'SERIALIZE': False,  # RECOMENDADO para tenants (explico abajo por qué)\
 }
 
 # 2. ¡Importante! Sobrescribe el motor (ENGINE) por el de django-tenants
@@ -246,6 +250,8 @@ AUTH_USER_MODEL = "users.User"
 # Backend de autenticación personalizado para multi-tenancy
 
 
+# Configuración anterior de Jazzmin (comentada, ahora usando django-unfold)
+"""
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
     "site_title": "Tu voz en ruta",
@@ -387,6 +393,26 @@ JAZZMIN_SETTINGS = {
     },
     # Add a language dropdown into the admin
     "language_chooser": False,
+}
+"""
+
+# Configuración de django-unfold
+UNFOLD = {
+    "SITE_TITLE": "Tu voz en ruta",
+    "SITE_HEADER": "Tu voz en ruta",
+    "SITE_URL": "/",
+    "SITE_ICON": lambda _: static("interview/images/logo_tu_voz_en_ruta.png"),
+    "SITE_LOGO": lambda _: static("interview/images/logo_tu_voz_en_ruta.png"),
+    "SITE_SYMBOL": "speed",
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "LOGIN": {
+        "image": lambda _: static("interview/images/Tu_voz_en_ruta.png"),
+    },
+    "SIDEBAR": {
+        "show_search": False,
+        "show_all_applications": True,
+    },
 }
 
 # Internationalization

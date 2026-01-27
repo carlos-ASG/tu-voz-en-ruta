@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
-
+from unfold.admin import ModelAdmin
 
 from django.utils.translation import gettext_lazy as _
 
@@ -132,13 +132,13 @@ class TenantUserAdmin(UserAdmin):
 #     )
 
 
-class RouteAdmin(admin.ModelAdmin):
+class RouteAdmin(ModelAdmin):
     list_display = ('name', 'created_at', 'updated_at')
     search_fields = ('name',)
     readonly_fields = ('created_at', 'updated_at')
     exclude = ('metadata',)
 
-class UnitAdmin(admin.ModelAdmin):
+class UnitAdmin(ModelAdmin):
     list_display = ('transit_number', 'internal_number', 'owner', 'route', 'created_at', 'updated_at')
     search_fields = ('transit_number', 'internal_number', 'owner')
     ordering = ('transit_number', 'internal_number', 'owner')
